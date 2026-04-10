@@ -1,6 +1,6 @@
-def main():
-    print("Hello from fastapi-auth-service!")
+from fastapi import FastAPI
+from .middleware.logging import RequestLoggingMiddleware
 
+app = FastAPI()
 
-if __name__ == "__main__":
-    main()
+app.add_middleware(RequestLoggingMiddleware)

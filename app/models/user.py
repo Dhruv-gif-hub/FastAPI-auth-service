@@ -1,4 +1,6 @@
 from pydantic import BaseModel
+from typing_extensions import Annotated
+from fastapi import Form
 
 class Users(BaseModel):
     username: str
@@ -9,3 +11,6 @@ class Users(BaseModel):
 class UserInDB(Users):
     hashed_password: str
 
+class signupUser(BaseModel):
+    username: Annotated[str, Form(...)]
+    password: Annotated[str, Form(...)]

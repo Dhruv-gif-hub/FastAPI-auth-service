@@ -6,16 +6,11 @@ import jwt
 from pwdlib import PasswordHash
 from .config import config
 from ..models.auth_model import TokenData
-from ..models.user import UserInDB
 from ..repositories.database import fake_db
 
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
     
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
+        
 password_hash = PasswordHash.recommended()
 
 
@@ -54,7 +49,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         token_data = TokenData(username=username)
     except jwt.InvalidTokenError:
         raise credentials_exception
-    user = get_user(fake_db, username=token_data.username)
+    user = fake_db.get_user(username=token_data.username)
     if user is None:
         raise credentials_exception
     return user
