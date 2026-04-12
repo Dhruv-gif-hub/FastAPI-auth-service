@@ -3,15 +3,15 @@ from datetime import timedelta
 from typing_extensions import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
 from ..core.config import config
-from ..core.security import verify_password, create_access_token, password_hash, create_refresh_token
+from ..core.security import verify_password, create_access_token, password_hash, create_refresh_token, oauth2_scheme
 from ..models.auth_model import Token
 from ..repositories.database import fake_db
 from ..models.user import signupUser
 from ..dependencies.rate_limiter import rate_limiter
-from ..core.security import oauth2_scheme, create_access_token
 from ..services.exceptions import credentials_exception
 import jwt
 from ..models.auth_model import TokenData
+from ..core.roles import ROLE_SCOPE_MAP
 
 router = APIRouter(prefix="/auth")
 
@@ -59,9 +59,11 @@ def login_access_token(
             status_code=status.HTTP_400_BAD_REQUEST, 
             detail="Incorrect username or password"
             )
+    user_scopes = ROLE_SCOPE_MAP.get(user.role, [])
     acces_token_expires = timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=acces_token_expires
+        data={"sub": user.username,
+              "scope":" ".join(user_scopes)}, expires_delta=acces_token_expires
     )
     refresh_token_expires = timedelta(days=config.REFRESH_EXPIRE_DAYS)
     refresh_token = create_refresh_token(data={"sub": user.username}, expires_delta=refresh_token_expires)
@@ -121,9 +123,11 @@ def refresh_token(refresh_token : Annotated[str|None,Cookie()], response: Respon
     user = fake_db.get_user(username=token_data.username)
     if user is None:
         raise credentials_exception
+    user_scopes = ROLE_SCOPE_MAP.get(user.role, [])
     acces_token_expires = timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
     new_access_token = create_access_token(
-            data={"sub": user.username}, expires_delta=acces_token_expires
+            data={"sub": user.username,
+                  "scope":" ".join(user_scopes)}, expires_delta=acces_token_expires
         )
     
     response.set_cookie(

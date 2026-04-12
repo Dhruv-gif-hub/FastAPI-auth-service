@@ -6,4 +6,5 @@ class Token(BaseModel):
     token_type: str
 
 class TokenData(BaseModel):
-    username: str 
+    username: str
+    scopes: list[str] = [] 
