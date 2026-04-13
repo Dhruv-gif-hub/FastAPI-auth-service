@@ -67,13 +67,6 @@ def login_access_token(
     )
     refresh_token_expires = timedelta(days=config.REFRESH_EXPIRE_DAYS)
     refresh_token = create_refresh_token(data={"sub": user.username}, expires_delta=refresh_token_expires)
-    response.set_cookie(
-            key="access_token",
-            value=access_token,
-            httponly=True,
-            max_age=1800,  # 30 min
-            samesite="lax"
-        )
     
     response.set_cookie(
             key="refresh_token",
@@ -98,13 +91,12 @@ blacklisted_tokens = set()
 
 @router.post("/logout")
 def logout(response: Response, token: str = Depends(oauth2_scheme)):
-    response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
     blacklisted_tokens.add(token)
     return {"message": "Logged out"}
 
-@router.post("/refresh")
-def refresh_token(refresh_token : Annotated[str|None,Cookie()], response: Response):
+@router.post("/refresh", response_model=Token)
+def refresh_token(refresh_token : Annotated[str|None,Cookie()]):
     # Alternate
     # refresh_token = request.cookies.get("access_token") where request:Request 
     if not refresh_token:
@@ -129,13 +121,5 @@ def refresh_token(refresh_token : Annotated[str|None,Cookie()], response: Respon
             data={"sub": user.username,
                   "scope":" ".join(user_scopes)}, expires_delta=acces_token_expires
         )
-    
-    response.set_cookie(
-        key="access_token",
-        value=new_access_token,
-        httponly=True,
-        max_age=900,
-        samesite="lax"
-    )
 
-    return {"message": "Access token refreshed"}
+    return Token(access_token=new_access_token, token_type="bearer")
