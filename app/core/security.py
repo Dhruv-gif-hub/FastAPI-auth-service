@@ -6,7 +6,8 @@ import jwt
 from pwdlib import PasswordHash
 from .config import config
 from ..models.auth_model import TokenData
-from ..repositories.database import fake_db
+from ..dependencies.db import get_db
+from ..repositories.database import Database
 from ..schemas.auth import blacklisted_tokens
 
     
@@ -54,7 +55,9 @@ def create_refresh_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 def get_current_user(security_scopes: SecurityScopes,
-        token: Annotated[str, Depends(oauth2_scheme)], request: Request):
+        token: Annotated[str, Depends(oauth2_scheme)], 
+        request: Request,
+        db : Annotated[Database, Depends(get_db)]):
     token2 = request.cookies.get("access_token")
     #token2 uses cookies but we are going ahead with token
     if security_scopes.scopes:
@@ -82,7 +85,7 @@ def get_current_user(security_scopes: SecurityScopes,
 
     except jwt.InvalidTokenError:
         raise credentials_exception
-    user = fake_db.get_user(username=token_data.username)
+    user = db.get_user(username=token_data.username)
     if user is None:
         raise credentials_exception
     for required_scope in security_scopes.scopes:

@@ -5,7 +5,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from ..core.config import config
 from ..core.security import verify_password, create_access_token, password_hash, create_refresh_token, oauth2_scheme
 from ..models.auth_model import Token
-from ..repositories.database import fake_db
+from ..dependencies.db import get_db
+from ..repositories.database import Database
 from ..models.user import signupUser
 from ..dependencies.rate_limiter import rate_limiter
 from ..services.exceptions import credentials_exception
@@ -30,7 +31,8 @@ def authenticate_user(fake_db, username: str, password: str):
         return False
     return user
 
-def signup_user(fake_db, username: str, password: str):
+
+def signup_user(fake_db, username: str, password: str, role: str = "user"):
     if username in fake_db:
         raise HTTPException(
             status_code=400,
@@ -41,19 +43,22 @@ def signup_user(fake_db, username: str, password: str):
 
     user_data = {
         "username": username,
-        "hashed_password": hashed_password
+        "hashed_password": hashed_password,
+        "role" : role,
+        "posts": {}
     }
 
-    fake_db[username] = user_data
+    fake_db.upload_data(username, user_data)
 
     return user_data
 
 @router.post("/token", response_model=Token, dependencies=[Depends(login_limiter)])
 def login_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-        response: Response 
+        response: Response,
+        db : Annotated[Database, Depends(get_db)]
         ):
-    user = authenticate_user(fake_db,form_data.username, form_data.password)
+    user = authenticate_user(db,form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, 
@@ -78,9 +83,9 @@ def login_access_token(
     
     return Token(access_token=access_token, token_type="bearer")
 
-@router.post("/signup", tags=["Sign_Up"], dependencies=[Depends(signup_limiter)])
-def signup_access_token(data: signupUser):
-    user = signup_user(fake_db, data.username ,data.password)
+@router.post("/register", tags=["Sign_Up"], dependencies=[Depends(signup_limiter)])
+def signup_access_token(data: signupUser,db : Annotated[Database, Depends(get_db)]):
+    user = signup_user(db, data.username ,data.password)
 
     return {
         "message": "User created successfully",
@@ -96,7 +101,7 @@ def logout(response: Response, token: str = Depends(oauth2_scheme)):
     return {"message": "Logged out"}
 
 @router.post("/refresh", response_model=Token)
-def refresh_token(refresh_token : Annotated[str|None,Cookie()]):
+def refresh_token(refresh_token : Annotated[str|None,Cookie()], db : Annotated[Database, Depends(get_db)]):
     # Alternate
     # refresh_token = request.cookies.get("access_token") where request:Request 
     if not refresh_token:
@@ -112,7 +117,7 @@ def refresh_token(refresh_token : Annotated[str|None,Cookie()]):
     except jwt.InvalidTokenError:
         raise credentials_exception
     
-    user = fake_db.get_user(username=token_data.username)
+    user = db.get_user(username=token_data.username)
     if user is None:
         raise credentials_exception
     user_scopes = ROLE_SCOPE_MAP.get(user.role, [])

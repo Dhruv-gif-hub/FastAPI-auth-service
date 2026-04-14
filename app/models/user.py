@@ -10,6 +10,7 @@ class Users(BaseModel):
 class UserInDB(Users):
     hashed_password: str
     role: str
+    posts: dict
 
 class signupUser(BaseModel):
     username: Annotated[str, Form(...)]
