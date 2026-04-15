@@ -1,18 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Request, Cookie
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Request, Cookie, Form
 from datetime import timedelta
 from typing_extensions import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
 from ..core.config import config
-from ..core.security import verify_password, create_access_token, password_hash, create_refresh_token, oauth2_scheme
-from ..models.auth_model import Token
+from ..core.security import create_access_token, create_refresh_token, oauth2_scheme
+from ..models.auth_model import Token, TokenData
 from ..dependencies.db import get_db
 from ..repositories.database import Database
 from ..models.user import signupUser
 from ..dependencies.rate_limiter import rate_limiter
 from ..services.exceptions import credentials_exception
 import jwt
-from ..models.auth_model import TokenData
+from ..models.user import UserInDB
 from ..core.roles import ROLE_SCOPE_MAP
+from ..core.utils import verify_password, password_hash, blacklisted_tokens
 
 router = APIRouter(prefix="/auth")
 
@@ -21,9 +22,9 @@ signup_limiter = rate_limiter(limit=3, window_seconds=60)
 
 hash_value = password_hash.hash(config.HASH_KEY)
 
-def authenticate_user(fake_db, username: str, password: str):
+def authenticate_user(db, username: str, password: str):
 
-    user = fake_db.get_user(username)
+    user = db.get_user(username)
     if not user:
         verify_password(password, hash_value)
         return False
@@ -32,23 +33,22 @@ def authenticate_user(fake_db, username: str, password: str):
     return user
 
 
-def signup_user(fake_db, username: str, password: str, role: str = "user"):
-    if username in fake_db:
+def signup_user(db, user):
+    if user.username in db.file:
         raise HTTPException(
             status_code=400,
             detail="User already exists"
         )
 
-    hashed_password = password_hash.hash(password)
+    hash_password = password_hash.hash(user.password)
 
     user_data = {
-        "username": username,
-        "hashed_password": hashed_password,
-        "role" : role,
-        "posts": {}
+        "username": user.username,
+        "hashed_password": hash_password,
+        "role" : "user",
     }
 
-    fake_db.upload_data(username, user_data)
+    db.upload_data(user.username, user_data)
 
     return user_data
 
@@ -85,14 +85,13 @@ def login_access_token(
 
 @router.post("/register", tags=["Sign_Up"], dependencies=[Depends(signup_limiter)])
 def signup_access_token(data: signupUser,db : Annotated[Database, Depends(get_db)]):
-    user = signup_user(db, data.username ,data.password)
+    user = signup_user(db, data)
 
     return {
         "message": "User created successfully",
         "username": user["username"]
     }
 
-blacklisted_tokens = set()
 
 @router.post("/logout")
 def logout(response: Response, token: str = Depends(oauth2_scheme)):

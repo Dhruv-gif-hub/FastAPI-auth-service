@@ -9,3 +9,6 @@ def require_write_user():
 
 def require_delete_user():
     return Security(get_current_user, scopes=["delete:user"])
+
+def require_admin():
+    return Security(get_current_user, scopes=["read:user_profile"])

@@ -3,12 +3,11 @@ from fastapi import Depends, HTTPException, status, Request
 from typing_extensions import Annotated
 from fastapi.security import OAuth2PasswordBearer,SecurityScopes
 import jwt
-from pwdlib import PasswordHash
 from .config import config
 from ..models.auth_model import TokenData
 from ..dependencies.db import get_db
 from ..repositories.database import Database
-from ..schemas.auth import blacklisted_tokens
+from ..core.utils import verify_password, password_hash, blacklisted_tokens
 
     
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token" ,
@@ -18,12 +17,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token" ,
                                          "delete:user":"Delete User"
                                      })
         
-password_hash = PasswordHash.recommended()
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return password_hash.verify(plain_password, hashed_password)
-
 def get_password_hash(password: str) -> str:
     return password_hash.hash(password)
 
