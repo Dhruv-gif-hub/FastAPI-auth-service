@@ -25,6 +25,10 @@ hash_value = password_hash.hash(config.HASH_KEY)
 def authenticate_user(db, username: str, password: str):
 
     user = db.get_user(username)
+
+    if not db.status(username):
+        return False
+    
     if not user:
         verify_password(password, hash_value)
         return False
@@ -41,11 +45,16 @@ def signup_user(db, user):
         )
 
     hash_password = password_hash.hash(user.password)
+    
+    user_role = "user"
 
+    if db.total_users() < 0:
+        user_role = "admin"
+    
     user_data = {
         "username": user.username,
         "hashed_password": hash_password,
-        "role" : "user",
+        "role" : user_role,
     }
 
     db.upload_data(user.username, user_data)
@@ -62,7 +71,7 @@ def login_access_token(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, 
-            detail="Incorrect username or password"
+            detail="Incorrect username or password , or user is not active"
             )
     user_scopes = ROLE_SCOPE_MAP.get(user.role, [])
     acces_token_expires = timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)

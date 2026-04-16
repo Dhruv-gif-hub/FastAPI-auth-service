@@ -6,6 +6,9 @@ from uuid import UUID , uuid4
 class Database():
     def __init__(self):
         self.file = {}
+
+    def total_users(self):
+        return len(self.file)
         
     def get_user(self, username: str):
         user_dict = self.file.get(username)
@@ -21,6 +24,9 @@ class Database():
         self.file[username] = data
         self.file[username]["User_id"] = str(uuid4)
         self.file[username]["is_active"] = True
+
+    def status(self, username: str):
+        return self.file[username]["is_active"]
 
     def delete_data(self, username: str):
         if username not in self.file:

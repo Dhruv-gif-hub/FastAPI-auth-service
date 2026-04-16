@@ -56,7 +56,7 @@ def create_admin(db : Annotated[Database , Depends(get_db)],
         "Message": "Created"
     }
 
-@router.delete("/users/{username}")
+@router.delete("/user_deactivate/{username}")
 def deactivate_account(db : Annotated[Database , Depends(get_db)],
                  user : Annotated[UserInDB, Depends(require_admin)],
                  username: Annotated[str, Path(title="The name of the user to get")]

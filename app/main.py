@@ -9,7 +9,7 @@ app = FastAPI()
 def create_app() -> FastAPI:
     app = FastAPI(
         title="My API",
-        description="Backend for AI project",
+        description="Backend for project",
         version="1.0.0"
     )
 
