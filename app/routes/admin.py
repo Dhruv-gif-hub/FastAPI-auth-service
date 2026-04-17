@@ -83,6 +83,6 @@ def hard_delete(db : Annotated[Database , Depends(get_db)],
         )
     db.delete_data(username)
     return {
-        "Message": "User_deleted_"
+        "Message": "User_deleted"
     }
     
