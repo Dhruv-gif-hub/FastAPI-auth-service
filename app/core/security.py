@@ -51,8 +51,7 @@ def get_current_user(security_scopes: SecurityScopes,
         token: Annotated[str, Depends(oauth2_scheme)], 
         request: Request,
         db : Annotated[Database, Depends(get_db)]):
-    token2 = request.cookies.get("access_token")
-    #token2 uses cookies but we are going ahead with token
+    
     if security_scopes.scopes:
         authenticate_value = f'Bearer scope="{security_scopes.scope_str}"'
     else:
