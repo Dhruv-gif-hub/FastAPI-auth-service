@@ -7,7 +7,7 @@ from .config import config
 from ..models.auth_model import TokenData
 from ..dependencies.db import get_db
 from ..repositories.database import Database
-from ..core.utils import verify_password, password_hash, blacklisted_tokens
+from ..core.utils import password_hash, blacklisted_tokens
 
     
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token" ,
