@@ -86,7 +86,7 @@ def login_access_token(
             key="refresh_token",
             value=refresh_token,
             httponly=True,
-            max_age=7*24*60*60, # 7 days
+            max_age=7*24*60*60,# 7 days
             samesite="lax"
         )
     
