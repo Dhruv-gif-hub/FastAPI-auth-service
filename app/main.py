@@ -4,8 +4,6 @@ from .routes import admin , user
 from .schemas import auth
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
-
 def create_app() -> FastAPI:
     app = FastAPI(
         title="My API",
@@ -35,8 +33,3 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
-
-@app.get("/")
-def root():
-    return {"message": "API is running"}
-
