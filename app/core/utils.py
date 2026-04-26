@@ -1,6 +1,6 @@
 from pwdlib import PasswordHash
 
-password_hash = PasswordHash.recommended()
+password_hash = PasswordHash.recommended() 
 
 blacklisted_tokens = set()
 

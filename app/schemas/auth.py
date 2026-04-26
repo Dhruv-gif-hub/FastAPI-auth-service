@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Request, Cookie, Form
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Request, Cookie
 from datetime import timedelta
 from typing_extensions import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
@@ -111,7 +111,7 @@ def logout(response: Response, token: str = Depends(oauth2_scheme)):
 @router.post("/refresh", response_model=Token)
 def refresh_token(refresh_token : Annotated[str|None,Cookie()], db : Annotated[Database, Depends(get_db)]):
     # Alternate
-    # refresh_token = request.cookies.get("access_token") where request:Request 
+    # refresh_token = request.cookies.get("refresh_token") where request:Request 
     if not refresh_token:
         raise HTTPException(status_code=401, detail="No refresh token")
     
