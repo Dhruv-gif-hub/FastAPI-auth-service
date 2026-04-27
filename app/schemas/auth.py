@@ -87,7 +87,8 @@ def login_access_token(
             value=refresh_token,
             httponly=True,
             max_age=7*24*60*60, # 7 days
-            samesite="lax"
+            samesite="lax",
+            secure=True
         )
     
     return Token(access_token=access_token, token_type="bearer")
