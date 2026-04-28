@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Request, Cookie
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
 from datetime import timedelta
 from typing_extensions import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
