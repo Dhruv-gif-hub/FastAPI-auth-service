@@ -11,7 +11,6 @@ from ..models.user import signupUser
 from ..dependencies.rate_limiter import rate_limiter
 from ..services.exceptions import credentials_exception
 import jwt
-from ..models.user import UserInDB
 from ..core.roles import ROLE_SCOPE_MAP
 from ..core.utils import verify_password, password_hash, blacklisted_tokens
 
