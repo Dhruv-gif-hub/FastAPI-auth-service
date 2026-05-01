@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
-from fastapi import Depends, HTTPException, status, Request
+from fastapi import Depends, HTTPException, status, Request, Security
 from typing_extensions import Annotated
-from fastapi.security import OAuth2PasswordBearer,SecurityScopes
+from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 import jwt
 from .config import config
 from ..models.auth_model import TokenData
@@ -48,7 +48,7 @@ def create_refresh_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 def get_current_user(security_scopes: SecurityScopes,
-        token: Annotated[str, Depends(oauth2_scheme)], 
+        token: Annotated[str, Security(oauth2_scheme)], 
         request: Request,
         db : Annotated[Database, Depends(get_db)]):
     
