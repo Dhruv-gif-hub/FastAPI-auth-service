@@ -53,5 +53,4 @@ class Database():
     def deactivating_account(self, username: str):
         self.file[username]["is_active"] = False
 
-
 fake_db = Database()
