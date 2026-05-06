@@ -3,6 +3,8 @@ from fastapi import status
 from ..models.user import UserInDB
 from uuid import uuid4
 
+# Using custom in-memory database to store user data, which will be Lost when the application restarts.
+# In production, database like PostgreSQL or MongoDB should be used to persist data across application restarts.
 class Database():
     def __init__(self):
         self.file = {}
