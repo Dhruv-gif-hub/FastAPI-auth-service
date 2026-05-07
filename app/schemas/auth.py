@@ -47,7 +47,7 @@ def signup_user(db, user):
     
     user_role = "user"
 
-    if db.total_users() < 0:
+    if db.total_users() < 0: # This condition can be changed to assign admin role to the first user or based on some criteria.
         user_role = "admin"
     
     user_data = {
