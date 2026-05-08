@@ -9,7 +9,7 @@ from ..dependencies.db import get_db
 from ..repositories.database import Database
 from ..core.utils import password_hash, blacklisted_tokens
 
-    
+# tokenUrl is the endpoint where the client will send the username and password to get the token.
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token" ,
                                      scopes={
                                          "read:user":"Read User Info",
