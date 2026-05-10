@@ -4,6 +4,8 @@ from .routes import admin , user
 from .schemas import auth
 from fastapi.middleware.cors import CORSMiddleware
 
+# This is the main entry point of the application. 
+# It creates the FastAPI app, adds middleware, and includes the routers for different endpoints.
 def create_app() -> FastAPI:
     app = FastAPI(
         title="My API",
