@@ -12,10 +12,11 @@ def create_app() -> FastAPI:
         description="Backend for project",
         version="1.0.0"
     )
-
+# CORS middleware is added to allow cross-origin requests. 
+# In production, you should specify the allowed origins instead of using "*".
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # change in production
+        allow_origins=["*"], 
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
