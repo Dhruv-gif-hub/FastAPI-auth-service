@@ -22,6 +22,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+# Custom middleware for logging requests is added to the app.
     app.add_middleware(RequestLoggingMiddleware)
 
     app.include_router(auth.router, tags=["Auth"])
