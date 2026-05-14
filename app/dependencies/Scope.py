@@ -1,6 +1,7 @@
 from fastapi import Security
 from ..core.security import get_current_user
 
+# These functions define the required scopes for different user roles.
 def require_read_user():
     return Security(get_current_user, scopes=["read:user"])
 
