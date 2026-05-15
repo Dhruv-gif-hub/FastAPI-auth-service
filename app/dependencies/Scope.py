@@ -5,6 +5,7 @@ from ..core.security import get_current_user
 def require_read_user():
     return Security(get_current_user, scopes=["read:user"])
 
+# This function defines the required scope for users who can modify user information.
 def require_write_user():
     return Security(get_current_user, scopes=["write:user"])
 
