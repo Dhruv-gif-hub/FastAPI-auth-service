@@ -10,6 +10,7 @@ from ..core.utils import verify_password
 from typing import Dict
 from fastapi.responses import JSONResponse
 
+# This file contains the routes related to user profile access, post creation, and profile updates.
 router = APIRouter(prefix="/users")
 
 @router.get("/me", response_model=Dict[str, post])

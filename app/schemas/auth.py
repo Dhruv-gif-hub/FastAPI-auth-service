@@ -61,6 +61,7 @@ def signup_user(db, user):
 
     return user_data
 
+
 @router.post("/token", response_model=Token, dependencies=[Depends(login_limiter)])
 def login_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
