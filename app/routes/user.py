@@ -52,6 +52,7 @@ def update_profile(db: Annotated[Database, Depends(get_db)],
         "Message": "Updated"
     }
 
+
 @router.post(("/me/change-password"))
 def update_password(db: Annotated[Database, Depends(get_db)],
                     user: Annotated[UserInDB, Depends(require_write_user)],

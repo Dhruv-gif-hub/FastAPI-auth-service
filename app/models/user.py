@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, EmailStr
 from typing_extensions import Annotated
 from fastapi import Form
 
+
 class Users(BaseModel):
     username: Annotated[str, Form(...)]
     email: Annotated[EmailStr, Form(...)]

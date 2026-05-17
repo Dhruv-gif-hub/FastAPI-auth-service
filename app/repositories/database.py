@@ -55,4 +55,5 @@ class Database():
     def deactivating_account(self, username: str):
         self.file[username]["is_active"] = False
 
+# This is a fake database instance that can be used for testing purposes.
 fake_db = Database()
