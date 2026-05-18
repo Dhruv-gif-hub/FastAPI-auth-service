@@ -11,7 +11,7 @@ class Users(BaseModel):
 class UserInDB(Users):
     hashed_password: Annotated[str, Form(...)]
     role: str
-    posts: Annotated[list[str], Field(default_factory=dict)]
+    posts: Annotated[list[str], Field(default_factory=list)] 
 
 class signupUser(BaseModel):
     username: Annotated[str, Form(...)]
