@@ -49,7 +49,8 @@ def create_refresh_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 def get_current_user(security_scopes: SecurityScopes,
- # Security is used to declare that this dependency is required for the endpoint, and it will use the oauth2_scheme to extract the token from the request.
+ # Security is used to declare that this dependency is required for the endpoint, 
+ # and it will use the oauth2_scheme to extract the token from the request.
         token: Annotated[str, Security(oauth2_scheme)],
         request: Request,
         db : Annotated[Database, Depends(get_db)]):
