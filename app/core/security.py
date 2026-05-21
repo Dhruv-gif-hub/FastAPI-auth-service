@@ -65,7 +65,7 @@ def get_current_user(security_scopes: SecurityScopes,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": authenticate_value}
         )
-    if token in blacklisted_tokens:
+    if token in blacklisted_tokens: # check if the token is blacklisted (i.e., has been revoked)
         return None
     try:
         payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
