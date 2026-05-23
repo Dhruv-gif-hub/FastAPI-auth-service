@@ -3,7 +3,7 @@ from fastapi import Request, HTTPException, status
 
 rate_limiter_storage = {}
 
-# Custome rate limiter dependency
+# Custom rate limiter dependency
 
 def rate_limiter(limit: int, window_seconds: int):
     async def limiter(request: Request):
