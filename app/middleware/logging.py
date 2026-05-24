@@ -43,6 +43,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             f"[{request_id}] START | {method} {url} | IP={client_ip}"
         )
         try:
+            # call_next is used to pass the request
             response = await call_next(request)
         except Exception as e:
             logger.error(
