@@ -1,5 +1,5 @@
 from pwdlib import PasswordHash
-
+# Initialize the password hasher with recommended settings
 password_hash = PasswordHash.recommended() 
 
 blacklisted_tokens = set() # Set to store the blacklisted tokens that are no longer valid
