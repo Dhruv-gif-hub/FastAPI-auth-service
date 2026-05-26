@@ -9,6 +9,7 @@ def require_read_user():
 def require_write_user():
     return Security(get_current_user, scopes=["write:user"])
 
+# This function defines the required scope for users who can delete user information.
 def require_delete_user():
     return Security(get_current_user, scopes=["delete:user"])
 
