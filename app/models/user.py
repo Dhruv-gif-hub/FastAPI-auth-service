@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field, EmailStr
 from typing_extensions import Annotated
 from fastapi import Form
 
-
+# This module defines the data models for user-related operations in the application.
 class Users(BaseModel):
     username: Annotated[str, Form(...)]
     email: Annotated[EmailStr, Form(...)]
