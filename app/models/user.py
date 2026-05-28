@@ -8,6 +8,7 @@ class Users(BaseModel):
     email: Annotated[EmailStr, Form(...)]
     full_name: str | None = None
 
+# Model for representing a user in the database
 class UserInDB(Users):
     hashed_password: Annotated[str, Form(...)]
     role: str
