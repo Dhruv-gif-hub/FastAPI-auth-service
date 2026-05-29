@@ -14,6 +14,7 @@ class UserInDB(Users):
     role: str
     posts: Annotated[list[str], Field(default_factory=list)] 
 
+# Model for user signup, which includes only the necessary fields for creating a new user
 class signupUser(BaseModel):
     username: Annotated[str, Form(...)]
     password: Annotated[str, Form(...)]
