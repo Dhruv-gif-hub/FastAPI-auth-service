@@ -19,6 +19,7 @@ class signupUser(BaseModel):
     username: Annotated[str, Form(...)]
     password: Annotated[str, Form(...)]
 
+# Model for updating user information, allowing optional fields for username and email
 class Update_user(BaseModel):
     username: Annotated[str | None, Form(...)] = None
     email: Annotated[EmailStr | None, Form(...)] = None
