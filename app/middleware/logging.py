@@ -10,7 +10,7 @@ LOG_DIR = "logs"
 os.makedirs(LOG_DIR, exist_ok=True)
 
 logger = logging.getLogger("app_logger")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.INFO) 
 
 # File Handler
 file_handler = logging.FileHandler(os.path.join(LOG_DIR, "app.log"))
