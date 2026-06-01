@@ -3,7 +3,7 @@ from typing_extensions import Annotated
 from ..dependencies.Scope import require_read_user, require_write_user
 from ..models.user import UserInDB, Update_user
 from ..dependencies.db import get_db
-from ..repositories.database import Database
+from ..repositories.user_repository import Database
 from ..models.post import post
 from ..core.security import get_password_hash
 from ..core.utils import verify_password

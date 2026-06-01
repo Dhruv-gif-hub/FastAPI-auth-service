@@ -1,27 +1,23 @@
-from pydantic import BaseModel
-from typing import Literal
+from typing import List, Optional
 from datetime import datetime
-from beanie import Document
+from beanie import Link, BackLink, DocumentWithSoftDelete
 from pydantic import Field
 from bson import ObjectId
 from pymongo import IndexModel
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
+from ..models.post import ContentBlock
 
-class ContentBlock(BaseModel):
-    type: Literal[
-        "heading",
-        "paragraph"
-    ]
 
-    text: str
-
-class BlogContent(Document):
+class BlogContent(DocumentWithSoftDelete):
 
     blog_id: str
 
     content: list[ContentBlock]
-
+    comments : List[BackLink["Comment"]] = Field(
+        default_factory=list,
+        json_schema_extra={"original_field":"blog_content"} 
+) 
     created_at: datetime = Field(
         default_factory=datetime.now
     )
@@ -39,7 +35,7 @@ class BlogContent(Document):
         )
     ]
 
-class Comment(Document):
+class Comment(DocumentWithSoftDelete):
 
     blog_id: str
 
@@ -50,7 +46,8 @@ class Comment(Document):
         max_length=5000
     )
 
-    parent_comment_id: ObjectId | None= None
+    parent_comment_id: ObjectId | None= None 
+    blog_content : Optional[Link[BlogContent]] = None
 
     created_at: datetime = Field(
         default_factory=datetime.now
@@ -70,12 +67,12 @@ class Comment(Document):
     ]
         
 
-async def init_mongodb() -> None:
+async def init_mongodb() -> None: 
     client = AsyncIOMotorClient(
         "mongodb://localhost:27017"
     )
 
-    database = client["blog_platform"]
+    database = client["Blog_platform"]
 
     await init_beanie(
         database = database,

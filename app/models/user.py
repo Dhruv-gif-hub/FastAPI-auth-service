@@ -6,13 +6,11 @@ from fastapi import Form
 class Users(BaseModel):
     username: Annotated[str, Form(...)]
     email: Annotated[EmailStr, Form(...)]
-    full_name: str | None = None
 
 # Model for representing a user in the database
 class UserInDB(Users):
     hashed_password: Annotated[str, Form(...)]
     role: str
-    posts: Annotated[list[str], Field(default_factory=list)] 
 
 # Model for user signup, which includes only the necessary fields for creating a new user
 class signupUser(BaseModel):

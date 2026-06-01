@@ -1,4 +1,9 @@
-from ..repositories.database import fake_db
+from ..database.postgres import Session_local
 
-def get_db():
-    return fake_db
+async def get_db():
+    async with Session_local() as session:
+        try:
+            yield session
+            await session.commit() 
+        finally:
+            await session.close()

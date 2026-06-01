@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query, Path, HTTPException
 from ..dependencies.db import get_db
 from typing_extensions import Annotated
-from ..repositories.database import Database
+from ..repositories.user_repository import Database
 from ..dependencies.Scope import require_admin
 from ..models.user import UserInDB
 

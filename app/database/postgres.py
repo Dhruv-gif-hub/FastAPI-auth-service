@@ -1,5 +1,7 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+    async_sessionmaker,
+)
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
@@ -9,7 +11,7 @@ from typing import List
 from sqlalchemy.sql import func   
 
 
-engine = create_engine(
+engine = create_async_engine(
     "postgresql+psycopg2://postgres:Haldwani@1@localhost:5432/Blogs",
     pool_size=20,
     max_overflow=10,
@@ -19,7 +21,7 @@ engine = create_engine(
     echo=False
 )
 
-Session = sessionmaker(bind=engine,
+Session_local = async_sessionmaker(bind=engine,
                        autoflush=False,
                        autocommit=False
 )
@@ -45,7 +47,9 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(default=func.now())
 
 
-    blogs: Mapped[List["Blog"]] = relationship("Blog", back_populates="author")
+    blogs: Mapped[List["Blog"]] = relationship("Blog", 
+                                               back_populates="author",
+                                               lazy="selectin")
 
 
 class Blog(Base):
@@ -67,4 +71,6 @@ class Blog(Base):
     updated_at: Mapped[datetime] = mapped_column(nullable=True, onupdate=func.now())
 
 
-    author: Mapped["User"] = relationship("User", back_populates="blogs")
+    author: Mapped["User"] = relationship("User", 
+                                          back_populates="blogs",
+                                          lazy="selectin")

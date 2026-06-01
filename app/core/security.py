@@ -6,7 +6,7 @@ import jwt
 from .config import config
 from ..models.auth_model import TokenData
 from ..dependencies.db import get_db
-from ..repositories.database import Database
+from ..repositories.user_repository import Database
 from ..core.utils import password_hash, blacklisted_tokens
 
 # tokenUrl is the endpoint where the client will send the username and password to get the token.

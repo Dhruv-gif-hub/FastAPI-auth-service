@@ -6,7 +6,7 @@ from ..core.config import config
 from ..core.security import create_access_token, create_refresh_token, oauth2_scheme
 from ..models.auth_model import Token, TokenData
 from ..dependencies.db import get_db
-from ..repositories.database import Database
+from ..repositories.user_repository import Database
 from ..models.user import signupUser
 from ..dependencies.rate_limiter import rate_limiter
 from ..services.exceptions import credentials_exception
