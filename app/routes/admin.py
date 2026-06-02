@@ -1,16 +1,18 @@
 from fastapi import APIRouter, Depends, Query, Path, HTTPException
 from ..dependencies.db import get_db
 from typing_extensions import Annotated
-from ..repositories.user_repository import Database
+from sqlalchemy.ext.asyncio import AsyncSession
 from ..dependencies.Scope import require_admin
 from ..models.user import UserInDB
+from ..repositories.user_repository import UserRepository
 
 router = APIRouter(prefix="/admin")
 
 @router.get("/users")
 def users(limit: Annotated[int, Query(le=11)],
-          db : Annotated[Database , Depends(get_db)],
-          user : Annotated[UserInDB, Depends(require_admin)],
+          user_in_db = Depends(UserRepository),
+          db : Annotated[AsyncSession , Depends(get_db)],
+          user = Depends(require_admin),
           cursor: Annotated[str | None, Query()] = None
           ):
     users = list(db.file.items())
@@ -35,14 +37,14 @@ def users(limit: Annotated[int, Query(le=11)],
     }
 
 @router.get("/users/{username}")
-def find_user(db : Annotated[Database , Depends(get_db)],
+def find_user(db : Annotated[AsyncSession , Depends(get_db)],
               user : Annotated[UserInDB, Depends(require_admin)],
               username: Annotated[str, Path(title="The name of the user to get")]
               ):
     return db.get_user(username)
 
 @router.patch("/users/{username}/role")
-def create_admin(db : Annotated[Database , Depends(get_db)],
+def create_admin(db : Annotated[AsyncSession, Depends(get_db)],
                  user : Annotated[UserInDB, Depends(require_admin)],
                  username: Annotated[str, Path(title="The name of the user to get")]
                  ):
@@ -57,7 +59,7 @@ def create_admin(db : Annotated[Database , Depends(get_db)],
     }
 
 @router.delete("/user_deactivate/{username}")
-def deactivate_account(db : Annotated[Database , Depends(get_db)],
+def deactivate_account(db : Annotated[AsyncSession, Depends(get_db)],
                  user : Annotated[UserInDB, Depends(require_admin)],
                  username: Annotated[str, Path(title="The name of the user to get")]
                  ):
@@ -72,7 +74,7 @@ def deactivate_account(db : Annotated[Database , Depends(get_db)],
     }
 
 @router.delete("/users/{username}")
-def hard_delete(db : Annotated[Database , Depends(get_db)],
+def hard_delete(db : Annotated[AsyncSession , Depends(get_db)],
                 user : Annotated[UserInDB, Depends(require_admin)],
                 username: Annotated[str, Path(title="The name of the user to get")]
                 ):

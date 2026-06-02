@@ -21,7 +21,13 @@ class Blog_model(BaseModel):
     status: Annotated[str, Form(...)]
     Content: list[ContentBlock]
 
+class Blog_update(BaseModel):
+    model_config = ConfigDict(strict = True, extra="forbid", validate_assignment=True)
 
+    Title: Annotated[str|None, Form(...)] = None
+    status: Annotated[str|None, Form(...)] = None
+    Content: list[ContentBlock] | None = None
+    
 class Comment_model(BaseModel):
     model_config = ConfigDict(strict = True, extra="forbid", validate_assignment=True)
 

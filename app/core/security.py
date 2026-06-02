@@ -6,8 +6,9 @@ import jwt
 from .config import config
 from ..models.auth_model import TokenData
 from ..dependencies.db import get_db
-from ..repositories.user_repository import Database
+from ..repositories.user_repository import AsyncSession
 from ..core.utils import password_hash, blacklisted_tokens
+from ..repositories.user_repository import UserRepository
 
 # tokenUrl is the endpoint where the client will send the username and password to get the token.
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token" ,
@@ -53,8 +54,7 @@ def get_current_user(security_scopes: SecurityScopes,
  # and it will use the oauth2_scheme to extract the token from the request.
         token: Annotated[str, Security(oauth2_scheme)],
         request: Request,
-        db : Annotated[Database, Depends(get_db)]):
-    
+        user_access = Depends(UserRepository)):
     if security_scopes.scopes:
         authenticate_value = f'Bearer scope="{security_scopes.scope_str}"'
     else:
@@ -80,7 +80,7 @@ def get_current_user(security_scopes: SecurityScopes,
 
     except jwt.InvalidTokenError:
         raise credentials_exception
-    user = db.get_user(username=token_data.username)
+    user = user_access.get_by_username(username=token_data.username)
     if user is None:
         raise credentials_exception
     for required_scope in security_scopes.scopes:

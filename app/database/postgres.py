@@ -9,7 +9,7 @@ from uuid import uuid4, UUID
 from datetime import datetime
 from typing import List
 from sqlalchemy.sql import func   
-
+from pydantic import EmailStr
 
 engine = create_async_engine(
     "postgresql+psycopg2://postgres:Haldwani@1@localhost:5432/Blogs",
@@ -43,7 +43,8 @@ class User(Base):
     username: Mapped[str] = mapped_column(unique=True, nullable=False)
     password: Mapped[str] = mapped_column(unique=True, nullable=False)
     role: Mapped[str] = mapped_column(default="user", nullable=False)
-    email: Mapped[str] = mapped_column(unique=True, nullable=False)
+    email: Mapped[EmailStr] = mapped_column(unique=True, nullable=False)
+    is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(default=func.now())
 
 
@@ -67,6 +68,7 @@ class Blog(Base):
     mongo_content_id: Mapped[str] = mapped_column(nullable=False)
     title: Mapped[str] = mapped_column(nullable=False)
     status: Mapped[str] = mapped_column(nullable=False)
+    is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(default=func.now())
     updated_at: Mapped[datetime] = mapped_column(nullable=True, onupdate=func.now())
 

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, EmailStr
 from typing_extensions import Annotated
 from fastapi import Form
 
@@ -7,7 +7,7 @@ class Users(BaseModel):
     username: Annotated[str, Form(...)]
     email: Annotated[EmailStr, Form(...)]
 
-# Model for representing a user in the database
+# to be removed
 class UserInDB(Users):
     hashed_password: Annotated[str, Form(...)]
     role: str
@@ -16,6 +16,7 @@ class UserInDB(Users):
 class signupUser(BaseModel):
     username: Annotated[str, Form(...)]
     password: Annotated[str, Form(...)]
+    email: Annotated[EmailStr, Form(...)]
 
 # Model for updating user information, allowing optional fields for username and email
 class Update_user(BaseModel):

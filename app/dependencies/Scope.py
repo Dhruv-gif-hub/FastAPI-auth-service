@@ -15,4 +15,4 @@ def require_delete_user():
 
 # This function defines the required scope for admin users.
 def require_admin():
-    return Security(get_current_user, scopes=["read:user_profile"])
+    return Security(get_current_user, scopes=["read:user_profile"]) 

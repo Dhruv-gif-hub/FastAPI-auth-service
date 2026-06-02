@@ -38,28 +38,21 @@ class BlogContent(DocumentWithSoftDelete):
 class Comment(DocumentWithSoftDelete):
 
     blog_id: str
-
     user_id: str
-
     content: str = Field(
         min_length=1,
         max_length=5000
     )
-
     parent_comment_id: ObjectId | None= None 
     blog_content : Optional[Link[BlogContent]] = None
-
     created_at: datetime = Field(
         default_factory=datetime.now
     )
-
     updated_at: datetime = Field(
         default_factory=datetime.now
     )
-
     class Settings:
         name = "comments"
-
         indexes = [
         IndexModel("blog_id"),
         IndexModel("user_id"),
@@ -71,9 +64,7 @@ async def init_mongodb() -> None:
     client = AsyncIOMotorClient(
         "mongodb://localhost:27017"
     )
-
     database = client["Blog_platform"]
-
     await init_beanie(
         database = database,
         document_models = [

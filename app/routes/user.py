@@ -1,52 +1,40 @@
-from fastapi import APIRouter, Depends, status, HTTPException
-from typing_extensions import Annotated
+from fastapi import APIRouter, Depends, status, Body
 from ..dependencies.Scope import require_read_user, require_write_user
-from ..models.user import UserInDB, Update_user
-from ..dependencies.db import get_db
-from ..repositories.user_repository import Database
-from ..models.post import post
-from ..core.security import get_password_hash
-from ..core.utils import verify_password
-from typing import Dict
-from fastapi.responses import JSONResponse
+from ..models.user import Update_user
+from ..models.post import Blog_model
+from ..repositories.user_repository import UserRepository
+from ..services.blog_service import BlogService
 
 # This file contains the routes related to user profile access, post creation, and profile updates.
 router = APIRouter(prefix="/users")
 
-@router.get("/me", response_model=Dict[str, post])
-def profile_access(user : Annotated[UserInDB, Depends(require_read_user)]):
+@router.get("/me")
+def profile_access(user = Depends(require_read_user)):
     return user
 
     
 @router.post("/me", status_code=status.HTTP_202_ACCEPTED)
-def post_creation(db : Annotated[Database , Depends(get_db)] , 
-                  user : Annotated[UserInDB, Depends(require_write_user)],
-                  data: post):
-    data_db = {
-        "Title": data.Title,
-        "Content": data.Content
-    }
-    db.posting(user.username, data_db)
-    return {
-        "Message": "Posted"
-    }
+def post_creation(user = Depends(require_write_user),
+                  data : Blog_model = Body(...),
+                  post = Depends(BlogService)):
+    if data.author_id == user.id:
+        post.create_blog(data)
+        return {
+            "Message": "Posted"
+        }
 
 @router.get("/posts")
-def posts(db: Annotated[Database, Depends(get_db)],
-          user: Annotated[UserInDB, Depends(require_read_user)]):
-    data = db.post_access(user.username)
-    return JSONResponse(content=data, status_code=200)
+def posts(post = Depends(BlogService),
+          user = Depends(require_read_user)):
+    values = post.get_blogs_by_authour(user.id)
+    return values
 
 
 @router.patch("/update_me")
-def update_profile(db: Annotated[Database, Depends(get_db)],
-                   user: Annotated[UserInDB, Depends(require_write_user)],
-                   data: Update_user):
-    if data.username is not None:
-        db.update(user.username, "username", data.username)
-
-    if data.email is not None:
-        db.update(user.username, "email", data.email)
+def update_profile(user = Depends(require_write_user),
+                   data : Update_user = Body(...),
+                   user_in_db = Depends(UserRepository)):
+    user_in_db.updated_user_details(user.id, data)
 
     return {
         "Message": "Updated"
@@ -54,17 +42,11 @@ def update_profile(db: Annotated[Database, Depends(get_db)],
 
 
 @router.post(("/me/change-password"))
-def update_password(db: Annotated[Database, Depends(get_db)],
-                    user: Annotated[UserInDB, Depends(require_write_user)],
-                    current_password: str,
-                    new_password: str):
-    if not verify_password(current_password, user.hashed_password):
-        raise HTTPException(
-            status_code=401,
-            detail="Incorrect username or password"
-        )
-    hash_password = get_password_hash(new_password)
-    db.update(user.username, "hashed_password" , hash_password)
+def update_password(user = Depends(require_write_user),
+                    user_in_db = Depends(UserRepository),
+                    current_password: str = Body(...),
+                    new_password: str = Body(...)):
+    user_in_db.update_password(user.id, current_password, new_password)
     return {
         "Message": "Updated"
     }
