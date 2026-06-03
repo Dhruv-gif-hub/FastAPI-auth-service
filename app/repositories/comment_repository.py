@@ -5,10 +5,10 @@ from datetime import datetime
 class CommentRepository:
     async def create(self, model: Comment_model):
         comment = Comment(
-            blog_id=model.parent_blog_id,
-            user_id=model.user_id,
-            content=model.content,
-            parent_comment_id=model.parent_comment_id
+            blog_id = model.parent_blog_id,
+            user_id = model.user_id,
+            content = model.content,
+            parent_comment_id = model.parent_comment_id
         )
         return await comment.insert()
 
@@ -18,7 +18,7 @@ class CommentRepository:
         ).to_list()
     
     async def get_comment_by_id(self, comment_id: str):
-        return await Comment.find(Comment.id == comment_id).to_list()
+        return await Comment.find_one(Comment.id == comment_id)
     
     async def delete_comment(self, comment_id):
         return await Comment.find_one(Comment.id == comment_id).delete()
@@ -31,5 +31,12 @@ class CommentRepository:
             await comment.save()
             return comment
         return None
-
+    
+    async def hard_delete_comment(self, comment_id):
+        comment = await Comment.find_one(Comment.id == comment_id)
+        if comment:
+            result = comment.hard_delete()
+            return result
+        else:
+            return None
 

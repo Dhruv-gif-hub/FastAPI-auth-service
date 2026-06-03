@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
     async_sessionmaker,
 )
+from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
@@ -10,6 +11,7 @@ from datetime import datetime
 from typing import List
 from sqlalchemy.sql import func   
 from pydantic import EmailStr
+from sqlalchemy import Computed, Index
 
 engine = create_async_engine(
     "postgresql+psycopg2://postgres:Haldwani@1@localhost:5432/Blogs",
@@ -72,7 +74,16 @@ class Blog(Base):
     created_at: Mapped[datetime] = mapped_column(default=func.now())
     updated_at: Mapped[datetime] = mapped_column(nullable=True, onupdate=func.now())
 
+    search_vector: Mapped[TSVECTOR] = mapped_column(
+        TSVECTOR(),
+        Computed("to_tsvector('english', title || ' ' ||  status)", persisted=True),
+        index=False 
+    )
+
 
     author: Mapped["User"] = relationship("User", 
                                           back_populates="blogs",
                                           lazy="selectin")
+    __table_args__ = (
+        Index("ix_news_search_vector", "search_vector", postgresql_using="gin"),
+    )

@@ -7,7 +7,7 @@ from pymongo import IndexModel
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 from ..models.post import ContentBlock
-
+from uuid import UUID
 
 class BlogContent(DocumentWithSoftDelete):
 
@@ -38,7 +38,7 @@ class BlogContent(DocumentWithSoftDelete):
 class Comment(DocumentWithSoftDelete):
 
     blog_id: str
-    user_id: str
+    user_id: UUID
     content: str = Field(
         min_length=1,
         max_length=5000

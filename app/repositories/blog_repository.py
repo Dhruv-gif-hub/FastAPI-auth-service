@@ -41,6 +41,9 @@ class BlogContentRepository:
         Content = await BlogContent.find_one(
             BlogContent.blog_id == blog_id
         )
+        self.db.add(blog)
+        if Content:
+            await Content.insert()
         return [blog, Content]
 
     async def create_blog_response(self, blog_id: str, response_model = BlogResponse):
@@ -55,7 +58,7 @@ class BlogContentRepository:
             content = Content.content
         )
     
-    async def get_by_author_id(self, author_id: str):
+    async def get_by_author_id(self, author_id):
         stmt = select(Blog).where(and_(Blog.author_id == author_id, 
                                              Blog.is_active == True))
         result = await self.db.execute(stmt)
@@ -76,10 +79,21 @@ class BlogContentRepository:
         await Content.delete()
         return True
     
-    async def update_blog(self, blog_id: str, updates: Blog_update):
+    async def hard_delete(self, blog_id: str):
+        values = await self.get_by_blog_id(blog_id)
+        blog = values[0]
+        content = values[1]
+        if blog:
+            await self.db.delete(blog)
+        await content.hard_delete()
+    
+    
+    async def update_blog(self, user , blog_id: str, updates: Blog_update):
         values = await self.get_by_blog_id(blog_id)
         blog = values[0]
         Content = values[1]
+        if user.id != blog.author_id:
+            return None
         if updates.Title:
             blog.title = updates.Title
         if updates.status:
@@ -88,6 +102,8 @@ class BlogContentRepository:
             Content.content = updates.Content
             Content.updated_at = datetime.now()
             await Content.save()
+        await self.db.commit()
+        return True
 
     async def get_all_blogs(self, last_id: str|None = None, page_size: int = 10):
         if last_id:

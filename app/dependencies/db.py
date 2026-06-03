@@ -1,6 +1,7 @@
 from ..database.postgres import Session_local
 from ..repositories.blog_repository import BlogContentRepository
 from ..repositories.comment_repository import CommentRepository
+from ..repositories.user_repository import UserRepository
 from ..caching.redis import redis_client # Your global client instance
 from fastapi import Depends
 
@@ -24,3 +25,6 @@ async def get_comment_repo():
 
 async def get_redis():
     return redis_client    
+
+async def get_user_repo():
+    return UserRepository()

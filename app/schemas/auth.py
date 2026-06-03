@@ -5,20 +5,20 @@ from fastapi.security import OAuth2PasswordRequestForm
 from ..core.config import config
 from ..core.security import create_access_token, create_refresh_token, oauth2_scheme
 from ..models.auth_model import Token, TokenData
-from ..dependencies.db import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
 from ..models.user import signupUser
 from ..dependencies.rate_limiter import rate_limiter
 from ..services.exceptions import credentials_exception
 import jwt
 from ..core.roles import ROLE_SCOPE_MAP
-from ..core.utils import verify_password, password_hash, blacklisted_tokens
+from ..core.utils import verify_password, password_hash
 from ..repositories.user_repository import UserRepository
+from datetime import datetime, timedelta, timezone
+from ..caching.redis import redis_client
 
 router = APIRouter(prefix="/auth")
 
-login_limiter = rate_limiter(limit=5, window_seconds=60)
-signup_limiter = rate_limiter(limit=3, window_seconds=60)
+login_limiter = rate_limiter(max_requests=5, window_seconds=60)
+signup_limiter = rate_limiter(max_requests=3, window_seconds=60)
 
 hash_value = password_hash.hash(config.HASH_KEY)
 
@@ -90,8 +90,21 @@ def signup_access_token(data: signupUser, db = Depends(UserRepository)):
 @router.post("/logout")
 def logout(response: Response, token: str = Depends(oauth2_scheme)):
     response.delete_cookie("refresh_token")
-    blacklisted_tokens.add(token)
-    return {"message": "Logged out"}
+
+    try:
+        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+        exp_timestamp = payload["exp"]
+        current_timestamp = datetime.now(timezone.utc)
+        remaining_time = int(exp_timestamp - current_timestamp)
+        if remaining_time > 0:
+            redis_key = f"block_list:{token}"
+            redis_client.set(redis_key, "logged_out", ex=remaining_time)
+            return {"message": "Successfully logged out."}
+        else:
+            return {"message": "Token already expired, no need to blocklist."}
+    
+    except jwt.DecodeError:
+        return {"error": "Invalid token format."}
 
 @router.post("/refresh", response_model=Token)
 def refresh_token(refresh_token : Annotated[str|None,Cookie()], db = Depends(UserRepository)):

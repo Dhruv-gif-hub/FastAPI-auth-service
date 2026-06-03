@@ -1,90 +1,89 @@
-from fastapi import APIRouter, Depends, Query, Path, HTTPException
+from fastapi import APIRouter, Depends, Query, Path, Body
 from ..dependencies.db import get_db
 from typing_extensions import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..dependencies.Scope import require_admin
-from ..models.user import UserInDB
 from ..repositories.user_repository import UserRepository
+from ..services.user_service import UserService
+from uuid import UUID
+from ..services.comment_service import CommentService
+from ..services.blog_service import BlogService
 
 router = APIRouter(prefix="/admin")
 
 @router.get("/users")
-def users(limit: Annotated[int, Query(le=11)],
-          user_in_db = Depends(UserRepository),
-          db : Annotated[AsyncSession , Depends(get_db)],
+def users(last_id: Annotated[UUID, Body()],
+          user_in_db : Annotated[UserService, Depends(UserService)],
+          user_repo : Annotated[UserRepository, Depends(UserRepository)],
           user = Depends(require_admin),
-          cursor: Annotated[str | None, Query()] = None
+          page_size: Annotated[int | None, Query()] = None
           ):
-    users = list(db.file.items())
-    users.sort(key=lambda x: x[0])
-    start_index = 0
-
-    if cursor:
-        for i, (username, _) in enumerate(users):
-            if username == cursor:
-                start_index = i + 1
-                break
+    return user_in_db.get_all_users(user,user_repo, last_id, page_size)
     
-    paginated_users = users[start_index:start_index + limit]
-    result = [data for _, data in paginated_users]
-    next_cursor = None
-    if len(paginated_users) == limit:
-        next_cursor = paginated_users[-1][0]
-
-    return {
-        "data": result,
-        "next_cursor": next_cursor
-    }
 
 @router.get("/users/{username}")
-def find_user(db : Annotated[AsyncSession , Depends(get_db)],
-              user : Annotated[UserInDB, Depends(require_admin)],
-              username: Annotated[str, Path(title="The name of the user to get")]
+def find_user(user_in_db : Annotated[UserService, Depends(UserService)],
+              user_repo : Annotated[UserRepository, Depends(UserRepository)],
+              username: Annotated[str, Path(title="The name of the user to get")],
+              user = Depends(require_admin)
               ):
-    return db.get_user(username)
+    return user_in_db.get_user(user_repo, username,user)
 
 @router.patch("/users/{username}/role")
-def create_admin(db : Annotated[AsyncSession, Depends(get_db)],
-                 user : Annotated[UserInDB, Depends(require_admin)],
-                 username: Annotated[str, Path(title="The name of the user to get")]
+def create_admin(user_in_db : Annotated[UserService, Depends(UserService)],
+                 user_repo : Annotated[UserRepository, Depends(UserRepository)],
+                 username: Annotated[str, Path(title="The name of the user to get")],
+                 db : Annotated[AsyncSession, Depends(get_db)],
+                 user = Depends(require_admin)
                  ):
-    if username not in db.file:
-        raise HTTPException(
-            status_code=404,
-            detail="User does not exit"
-        )
-    db.admin_role(username)
-    return {
-        "Message": "Created"
-    }
+    update_user =  user_in_db.get_user(user_repo, username,user)
+    if update_user:
+        update_user.role = "admin"
+        db.add(update_user)
 
-@router.delete("/user_deactivate/{username}")
-def deactivate_account(db : Annotated[AsyncSession, Depends(get_db)],
-                 user : Annotated[UserInDB, Depends(require_admin)],
-                 username: Annotated[str, Path(title="The name of the user to get")]
-                 ):
-    if username not in db.file:
-        raise HTTPException(
-            status_code=404,
-            detail="User does not exit"
-        )
-    db.deactivating_account(username)
+@router.delete("/hard_delete/{user_id}")
+def hard_delete(user_in_db : Annotated[UserService, Depends(UserService)],
+                        user_id : Annotated[UUID, Path(title="The id of the user to get")],
+                        user = Depends(require_admin)
+                        ):
+    if not user:
+        return None
+    result = user_in_db.deleting_user(user_id)
     return {
         "Message": "Deactivated"
     }
 
-@router.delete("/users/{username}")
-def hard_delete(db : Annotated[AsyncSession , Depends(get_db)],
-                user : Annotated[UserInDB, Depends(require_admin)],
-                username: Annotated[str, Path(title="The name of the user to get")]
-                ):
-    if username not in db.file:
-        raise HTTPException(
-            status_code=404,
-            detail="User does not exit"
-        )
-    db.delete_data(username)
-    return {
-        "Message": "User_deleted"
-    }
+@router.delete("/soft_delete/{user_id}")
+def deleting_account(user_in_db : Annotated[UserService, Depends(UserService)],
+                     user_id : Annotated[UUID, Path(title="The id of the user to get")],
+                     user = Depends(require_admin)
+                     ):
+    if not user:
+        return None
+    return user_in_db.soft_delete(user_id)
+
+
+@router.delete("/comment/{comment_id}")
+def soft_delete(comment_id : Annotated[str, Path()],
+                      user_in_db : Annotated[UserService, Depends(UserService)],
+                      service : Annotated[CommentService, Depends(CommentService)],
+                      user = Depends(require_admin)):
+    if user:
+        return service.delete_comment(comment_id, user_in_db)
+
+@router.delete("/hard_delete_comment/{comment_id}")
+def hard_delete_comment(comment_id : Annotated[str, Path()],
+                        service : Annotated[CommentService, Depends(CommentService)],
+                        user = Depends(require_admin)
+                        ):
+    if user:
+        return service.hard_delete(comment_id)
     
+
+@router.delete("/blog,{blog_id}")
+def hard_delete_blog(post : Annotated[BlogService, Depends(BlogService)],
+                blog_id : Annotated[str, Path()],
+                user = Depends(require_admin)
+                ):
+    return post.hard_delete(blog_id)
+

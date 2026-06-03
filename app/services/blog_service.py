@@ -1,17 +1,15 @@
 from ..repositories.blog_repository import BlogContentRepository
-from ..repositories.comment_repository import CommentRepository
 from fastapi import Depends 
-from ..dependencies.db import get_blog_repo, get_comment_repo, get_redis
+from ..dependencies.db import get_blog_repo, get_redis
 from ..models.post import Blog_model, Blog_update
 import json
+from ..services.user_service import UserService
 
 class BlogService:
 
     def __init__(self, blog_repo: BlogContentRepository = Depends(get_blog_repo), 
-                 comment_repo: CommentRepository = Depends(get_comment_repo), 
-                 redis = Depends(get_redis)):
+                redis = Depends(get_redis)):
         self.blog_repo = blog_repo
-        self.comment_repo = comment_repo
         self.redis = redis
 
     async def get_blog(self,blog_id: str):
@@ -31,7 +29,7 @@ class BlogService:
     async def create_blog(self, blog: Blog_model):
         return await self.blog_repo.create(blog)
     
-    async def get_blogs_by_author(self, author_id: str):
+    async def get_blogs_by_author(self, author_id):
         cached = await self.redis.get(f"author_blogs:{author_id}")
         if cached:
             return json.loads(cached)
@@ -44,50 +42,23 @@ class BlogService:
         )
         return blogs
     
-    async def update_blog(self, blog_id: str, updates: Blog_update):
-        await self.blog_repo.update_blog(blog_id, updates)
+    async def update_blog(self, blog_id: str, user_in_db: UserService, updates: Blog_update):
+        user = user_in_db.profile_access()
+        result = await self.blog_repo.update_blog(user, blog_id, updates)
+        if not result:
+            return None
         await self.redis.delete(f"blog:{blog_id}")
         return (f'Blog with id {blog_id} updated successfully')
     
-    async def get_all_blogs(self):
-        return await self.blog_repo.get_all_blogs()
+    async def delete_blog(self, blog_id: str):
+        await self.blog_repo.delete_blog(blog_id)
+        await self.redis.delete(f"blog:{blog_id}")
+        return (f"Blog with id {blog_id} soft deleted successfully")
+        
+    async def get_all_blogs(self,last_id, page_size):
+        return await self.blog_repo.get_all_blogs(last_id, page_size)
     
-    async def get_comments_for_blog(self, blog_id: str):
-        cached = await self.redis.get(f"blog_comments:{blog_id}")
-        if cached:
-            return json.loads(cached)
-        comments = await self.comment_repo.get_blog_comments(blog_id)
-        comments_json = json.dumps([comment.model_dump() for comment in comments])
-        await self.redis.set(
-            f"blog_comments:{blog_id}",
-            comments_json,
-            ex=3600
-        )
-        return comments
-    
-    async def add_comments(self, comment_model):
-        return await self.comment_repo.create(comment_model)
-    
-    async def get_comment_by_id(self, comment_id: str):
-        cached = await self.redis.get(f"blog_comments_by_id:{comment_id}")
-        if cached:
-            return json.loads(cached)
-        comments = await self.comment_repo.get_comment_by_id(comment_id)
-        comments_json = json.dumps([comment.model_dump() for comment in comments])
-        await self.redis.set(
-            f"blog_comments_by_id:{comment_id}",
-            comments_json,
-            ex=3600
-        )
-        return comments
-    
-    async def delete_comment(self, comment_id):
-        await self.comment_repo.delete_comment(comment_id)
-        await self.redis.delete(f"blog_comments_by_id:{comment_id}")
-        return (f'Comment with id {comment_id} deleted successfully')
-    
-    async def update_comment(self, comment_id, new_content):
-        await self.comment_repo.update_comment(comment_id, new_content)
-        await self.redis.delete(f"blog_comments_by_id:{comment_id}")
-        return (f'Comment with id {comment_id} updated successfully')
-    
+    async def hard_delete(self, blog_id:str):
+        await self.blog_repo.hard_delete(blog_id)
+        await self.redis.delete(f"blog:{blog_id}")
+        return (f"Blog with id {blog_id} deleted successfully")

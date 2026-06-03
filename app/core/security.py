@@ -5,11 +5,9 @@ from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 import jwt
 from .config import config
 from ..models.auth_model import TokenData
-from ..dependencies.db import get_db
-from ..repositories.user_repository import AsyncSession
-from ..core.utils import password_hash, blacklisted_tokens
+from ..core.utils import password_hash
 from ..repositories.user_repository import UserRepository
-
+from ..caching.redis import redis_client
 # tokenUrl is the endpoint where the client will send the username and password to get the token.
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token" ,
                                      scopes={
@@ -65,8 +63,10 @@ def get_current_user(security_scopes: SecurityScopes,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": authenticate_value}
         )
-    if token in blacklisted_tokens: # check if the token is blacklisted (i.e., has been revoked)
+    redis_key = f"blocklist:{token}"
+    if redis_client.exists(redis_key):
         return None
+
     try:
         payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
 

@@ -32,7 +32,7 @@ class Comment_model(BaseModel):
     model_config = ConfigDict(strict = True, extra="forbid", validate_assignment=True)
 
     parent_blog_id: Annotated[str, Form(...)] # blog_id in mongodb
-    user_id: Annotated[str, Form(...)]
+    user_id: Annotated[UUID, Form(...)]
     content: Annotated[str, Form(..., description="Content can have at maximum 5000 characters")]
     parent_comment_id: Annotated[ObjectId | None, Form(...)] = None
 
