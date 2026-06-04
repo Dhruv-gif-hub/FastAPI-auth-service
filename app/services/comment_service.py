@@ -1,6 +1,6 @@
 from ..repositories.comment_repository import CommentRepository
 from fastapi import Depends 
-from ..dependencies.db import get_comment_repo, get_redis
+from ..dependencies.service_dependencies import get_comment_repo, get_redis
 import json
 
 class CommentService:

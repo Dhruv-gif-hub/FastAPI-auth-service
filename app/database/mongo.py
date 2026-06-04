@@ -1,8 +1,7 @@
 from typing import List, Optional
 from datetime import datetime
-from beanie import Link, BackLink, DocumentWithSoftDelete
+from beanie import Link, BackLink, DocumentWithSoftDelete, PydanticObjectId
 from pydantic import Field
-from bson import ObjectId
 from pymongo import IndexModel
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
@@ -43,7 +42,7 @@ class Comment(DocumentWithSoftDelete):
         min_length=1,
         max_length=5000
     )
-    parent_comment_id: ObjectId | None= None 
+    parent_comment_id: PydanticObjectId | None= None 
     blog_content : Optional[Link[BlogContent]] = None
     created_at: datetime = Field(
         default_factory=datetime.now
@@ -62,7 +61,7 @@ class Comment(DocumentWithSoftDelete):
 
 async def init_mongodb() -> None: 
     client = AsyncIOMotorClient(
-        "mongodb://localhost:27017"
+        "mongodb://172.29.80.1:27017"
     )
     database = client["Blog_platform"]
     await init_beanie(

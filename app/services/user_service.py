@@ -1,9 +1,7 @@
 from ..models.user import Update_user
 from ..models.post import Blog_model
 from ..repositories.user_repository import UserRepository
-from ..services.blog_service import BlogService
-from ..dependencies.Scope import require_read_user
-from ..dependencies.db import get_user_repo, get_redis
+from ..dependencies.service_dependencies import get_user_repo, get_redis
 from fastapi import Depends 
 from typing import Annotated
 
@@ -14,17 +12,29 @@ class UserService:
         self.user_repo = user_repo
         self.redis = redis
 
-    def profile_access(self, user = Depends(require_read_user)):
+    async def get_user_username(self, username):
+        cached = await self.redis.get(f"user_username:{username}")
+        if cached:
+            return cached
+        user = await self.user_repo.get_by_username(username)
+        await self.redis.set(
+            f"user_username:{username}",
+            user,
+            ex=3600
+        )
         return user
 
-    def post_creation(self, user, data : Blog_model, post: BlogService):
+    def profile_access(self, user):
+        return user
+
+    def post_creation(self, user, data : Blog_model, post):
         if data.author_id == user.id:
             result = post.create_blog(data)
             return {
                 "Message": "Posted"
             }
         
-    def posts(self, post: BlogService, user):
+    def posts(self, post, user):
         values = post.get_blogs_by_author(user.id)
         return values
 

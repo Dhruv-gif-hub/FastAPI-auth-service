@@ -34,6 +34,6 @@ class Comment_model(BaseModel):
     parent_blog_id: Annotated[str, Form(...)] # blog_id in mongodb
     user_id: Annotated[UUID, Form(...)]
     content: Annotated[str, Form(..., description="Content can have at maximum 5000 characters")]
-    parent_comment_id: Annotated[ObjectId | None, Form(...)] = None
+    parent_comment_id: Annotated[str | None, Form(...)] = None
 
 

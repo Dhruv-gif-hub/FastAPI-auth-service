@@ -5,9 +5,9 @@ from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 import jwt
 from .config import config
 from ..models.auth_model import TokenData
-from ..core.utils import password_hash
-from ..repositories.user_repository import UserRepository
+from ..services.user_service import UserService
 from ..caching.redis import redis_client
+
 # tokenUrl is the endpoint where the client will send the username and password to get the token.
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token" ,
                                      scopes={
@@ -16,8 +16,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token" ,
                                          "delete:user":"Delete User"
                                      })
         
-def get_password_hash(password: str) -> str:
-    return password_hash.hash(password)
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
@@ -52,7 +50,7 @@ def get_current_user(security_scopes: SecurityScopes,
  # and it will use the oauth2_scheme to extract the token from the request.
         token: Annotated[str, Security(oauth2_scheme)],
         request: Request,
-        user_access = Depends(UserRepository)):
+        user_access = Depends(UserService)):
     if security_scopes.scopes:
         authenticate_value = f'Bearer scope="{security_scopes.scope_str}"'
     else:
@@ -80,7 +78,7 @@ def get_current_user(security_scopes: SecurityScopes,
 
     except jwt.InvalidTokenError:
         raise credentials_exception
-    user = user_access.get_by_username(username=token_data.username)
+    user = user_access.get_user_username(username=token_data.username)
     if user is None:
         raise credentials_exception
     for required_scope in security_scopes.scopes:

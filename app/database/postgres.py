@@ -10,11 +10,10 @@ from uuid import uuid4, UUID
 from datetime import datetime
 from typing import List
 from sqlalchemy.sql import func   
-from pydantic import EmailStr
-from sqlalchemy import Computed, Index
+from sqlalchemy import Computed, Index, ForeignKey
 
 engine = create_async_engine(
-    "postgresql+psycopg2://postgres:Haldwani@1@localhost:5432/Blogs",
+    "postgresql+asyncpg://postgres:Haldwani%401@172.29.80.1:5432/Blogs",
     pool_size=20,
     max_overflow=10,
     pool_timeout=30,
@@ -32,20 +31,20 @@ class Base(DeclarativeBase):
     pass
 
 class User(Base):
-    __tablename__ = "users",
-    __table_args__ = {"schema": "blog_data"},
+    __tablename__ = "users"
+    __table_args__ = {"schema": "blog_data"}
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
 
     def __init__(self, **kwargs):
-        if id not in kwargs:
+        if "id" not in kwargs:
             kwargs["id"] = uuid4()
         super().__init__(**kwargs)
 
     username: Mapped[str] = mapped_column(unique=True, nullable=False)
     password: Mapped[str] = mapped_column(unique=True, nullable=False)
     role: Mapped[str] = mapped_column(default="user", nullable=False)
-    email: Mapped[EmailStr] = mapped_column(unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(unique=True, nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(default=func.now())
 
@@ -56,17 +55,17 @@ class User(Base):
 
 
 class Blog(Base):
-    __tablename__ = "blogs",
-    __table_args__ = {"schema": "blog_data"},
+    __tablename__ = "blogs"
+    __table_args__ = {"schema": "blog_data"}
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
 
     def __init__(self, **kwargs):
-        if id not in kwargs:
+        if "id" not in kwargs:
             kwargs["id"] = uuid4()
         super().__init__(**kwargs)
 
-    author_id: Mapped[UUID] = mapped_column(foreign_key="users.id")
+    author_id: Mapped[UUID] = mapped_column(ForeignKey("blog_data.users.id"))
     mongo_content_id: Mapped[str] = mapped_column(nullable=False)
     title: Mapped[str] = mapped_column(nullable=False)
     status: Mapped[str] = mapped_column(nullable=False)
@@ -86,4 +85,5 @@ class Blog(Base):
                                           lazy="selectin")
     __table_args__ = (
         Index("ix_news_search_vector", "search_vector", postgresql_using="gin"),
+        {"schema": "blog_data"}
     )

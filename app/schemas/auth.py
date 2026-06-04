@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie, Body
 from datetime import timedelta
 from typing_extensions import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
@@ -34,14 +34,14 @@ def authenticate_user(db, username: str, password: str):
     return user
 
 
-def signup_user(db, user):
-    user_in_db = db.get_by_username(user.username)
-    if not user_in_db:
+async def signup_user(db, user):
+    user_in_db = await db.get_by_username(user.username)
+    if user_in_db:
         raise HTTPException(
             status_code=400,
             detail="User already exists"
         )
-    new_user = db.create_user(user)
+    new_user = await db.create_user(user)
     return new_user
     
 
@@ -78,8 +78,8 @@ def login_access_token(
     return Token(access_token=access_token, token_type="bearer")
 
 @router.post("/register", tags=["Sign_Up"], dependencies=[Depends(signup_limiter)])
-def signup_access_token(data: signupUser, db = Depends(UserRepository)):
-    user = signup_user(db, data)
+async def signup_access_token(data : signupUser = Body(), db = Depends(UserRepository)):
+    user = await signup_user(db, data)
 
     return {
         "message": "User created successfully",

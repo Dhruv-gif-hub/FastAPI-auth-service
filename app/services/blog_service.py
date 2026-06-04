@@ -1,9 +1,8 @@
 from ..repositories.blog_repository import BlogContentRepository
 from fastapi import Depends 
-from ..dependencies.db import get_blog_repo, get_redis
+from ..dependencies.service_dependencies import get_blog_repo, get_redis
 from ..models.post import Blog_model, Blog_update
 import json
-from ..services.user_service import UserService
 
 class BlogService:
 
@@ -42,7 +41,7 @@ class BlogService:
         )
         return blogs
     
-    async def update_blog(self, blog_id: str, user_in_db: UserService, updates: Blog_update):
+    async def update_blog(self, blog_id: str, user_in_db, updates: Blog_update):
         user = user_in_db.profile_access()
         result = await self.blog_repo.update_blog(user, blog_id, updates)
         if not result:

@@ -12,15 +12,17 @@ from ..dependencies.Scope import require_read_user
 router = APIRouter(prefix="/users")
 
 @router.get("/me")
-def profile(user_in_db : Annotated[UserService, Depends(UserService)]):
-    return user_in_db.profile_access()
+def profile(user_in_db : Annotated[UserService, Depends(UserService)],
+            user_check = Depends(require_read_user)):
+    return user_in_db.profile_access(user_check)
 
     
 @router.post("/me", status_code=status.HTTP_202_ACCEPTED)
 def post_creation(user_in_db : Annotated[UserService, Depends(UserService)],
                   data : Annotated[Blog_model, Body()],
-                  post : Annotated[BlogService, Depends(BlogService)]):
-    user = user_in_db.profile_access()
+                  post : Annotated[BlogService, Depends(BlogService)],
+                  user_check = Depends(require_read_user)):
+    user = user_in_db.profile_access(user_check)
     if data.author_id == user.id:
         result = post.create_blog(data)
         return {
@@ -34,8 +36,9 @@ def blog_vector(search_text : Annotated[str, Body()],
 
 @router.get("/posts")
 def posts(user_in_db : Annotated[UserService, Depends(UserService)],
-          post : Annotated[BlogService, Depends(BlogService)]):
-    user = user_in_db.profile_access()
+          post : Annotated[BlogService, Depends(BlogService)],
+          user_check = Depends(require_read_user)):
+    user = user_in_db.profile_access(user_check)
     values = post.get_blogs_by_author(user.id)
     return values
 
@@ -70,8 +73,9 @@ def get_all(post : Annotated[BlogService, Depends(BlogService)],
 @router.patch("/update_me")
 def update_profile(data : Annotated[Update_user, Body()],
                    user_repo : Annotated[UserRepository, Depends(UserRepository)],
-                   user_in_db : Annotated[UserService, Depends(UserService)]):
-    user = user_in_db.profile_access()
+                   user_in_db : Annotated[UserService, Depends(UserService)],
+                   user_check = Depends(require_read_user)):
+    user = user_in_db.profile_access(user_check)
     return user_in_db.update_profile(user, data, user_repo)
 
 
@@ -79,8 +83,9 @@ def update_profile(data : Annotated[Update_user, Body()],
 def update_password(user_repo : Annotated[UserRepository, Depends(UserRepository)],
                     user_in_db : Annotated[UserService, Depends(UserService)],
                     current_password: Annotated[str, Body(...)],
-                    new_password: Annotated[str, Body(...)]):
-    user = user_in_db.profile_access()
+                    new_password: Annotated[str, Body(...)],
+                    user_check = Depends(require_read_user)):
+    user = user_in_db.profile_access(user_check)
     return user_in_db.update_password(user,user_repo, current_password, new_password)
 
 
@@ -113,8 +118,9 @@ def update_comment(comment_id : Annotated[str, Path()],
     return service.update_comment(comment_id, content, user_in_db)
 
 @router.delete("/me")
-def deleting_account(user_in_db : Annotated[UserService, Depends(UserService)]):
-    user = user_in_db.profile_access()
+def deleting_account(user_in_db : Annotated[UserService, Depends(UserService)],
+                     user_check = Depends(require_read_user)):
+    user = user_in_db.profile_access(user_check)
     return user.soft_delete(user.id)
 
 @router.delete("/blog,{blog_id}")
@@ -122,4 +128,6 @@ def delete_blog(post : Annotated[BlogService, Depends(BlogService)],
                 blog_id : Annotated[str, Path()],
                 user = Depends(require_read_user)
                 ):
-    return post.delete_blog(blog_id)
+    if user:
+        return post.delete_blog(blog_id)
+    return None

@@ -2,13 +2,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func
 from ..database.postgres import User, Blog
 from ..models.user import signupUser, Update_user
-from ..core.security import get_password_hash
+from ..core.utils import get_password_hash
 from ..core.utils import verify_password
 from fastapi import HTTPException, Depends
 from ..dependencies.db import get_db
 from uuid import UUID
-from ..database.postgres import Session_local
-from typing import Annotated
 
 class UserRepository:
 
