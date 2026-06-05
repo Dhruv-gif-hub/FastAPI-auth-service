@@ -11,8 +11,8 @@ from ..services.exceptions import credentials_exception
 import jwt
 from ..core.roles import ROLE_SCOPE_MAP
 from ..core.utils import verify_password, password_hash
-from ..repositories.user_repository import UserRepository
-from datetime import datetime, timedelta, timezone
+from ..services.user_service import UserService
+from datetime import datetime, timezone
 from ..caching.redis import redis_client
 
 router = APIRouter(prefix="/auth")
@@ -22,9 +22,9 @@ signup_limiter = rate_limiter(max_requests=3, window_seconds=60)
 
 hash_value = password_hash.hash(config.HASH_KEY)
 
-def authenticate_user(db, username: str, password: str):
+async def authenticate_user(db, username: str, password: str):
 
-    user = db.get_by_username(username)
+    user = await db.get_user_username(username)
 
     if not user:
         verify_password(password, hash_value)
@@ -35,7 +35,7 @@ def authenticate_user(db, username: str, password: str):
 
 
 async def signup_user(db, user):
-    user_in_db = await db.get_by_username(user.username)
+    user_in_db = await db.get_user_username(user.username)
     if user_in_db:
         raise HTTPException(
             status_code=400,
@@ -46,12 +46,12 @@ async def signup_user(db, user):
     
 
 @router.post("/token", response_model=Token, dependencies=[Depends(login_limiter)])
-def login_access_token(
+async def login_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         response: Response,
-        db = Depends(UserRepository)
+        db : Annotated[UserService, Depends()]
         ):
-    user = authenticate_user(db,form_data.username, form_data.password)
+    user = await authenticate_user(db,form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, 
@@ -78,7 +78,7 @@ def login_access_token(
     return Token(access_token=access_token, token_type="bearer")
 
 @router.post("/register", tags=["Sign_Up"], dependencies=[Depends(signup_limiter)])
-async def signup_access_token(data : signupUser = Body(), db = Depends(UserRepository)):
+async def signup_access_token(db : Annotated[UserService, Depends()], data : signupUser = Body()):
     user = await signup_user(db, data)
 
     return {
@@ -107,7 +107,8 @@ def logout(response: Response, token: str = Depends(oauth2_scheme)):
         return {"error": "Invalid token format."}
 
 @router.post("/refresh", response_model=Token)
-def refresh_token(refresh_token : Annotated[str|None,Cookie()], db = Depends(UserRepository)):
+async def refresh_token(refresh_token : Annotated[str|None,Cookie()],
+                  db : Annotated[UserService, Depends()]):
     # Alternate
     # refresh_token = request.cookies.get("refresh_token") where request:Request 
     if not refresh_token:
@@ -123,7 +124,7 @@ def refresh_token(refresh_token : Annotated[str|None,Cookie()], db = Depends(Use
     except jwt.InvalidTokenError:
         raise credentials_exception
     
-    user = db.get_by_username(username=token_data.username)
+    user = await db.get_user_username(username=token_data.username)
     if user is None:
         raise credentials_exception
     user_scopes = ROLE_SCOPE_MAP.get(user.role, [])
