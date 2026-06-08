@@ -4,6 +4,9 @@ from ..dependencies.service_dependencies import get_blog_repo, get_redis
 from ..models.post import Blog_model, Blog_update
 import json
 
+# This act as a layer between the user and the database.
+# From here the user's requests are mapped with the relevant database query function.
+# This lists all the functionalities related to the blogs.
 class BlogService:
 
     def __init__(self, blog_repo: BlogContentRepository = Depends(get_blog_repo), 
