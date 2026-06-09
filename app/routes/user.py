@@ -26,7 +26,8 @@ def post_creation(user_in_db : Annotated[UserService, Depends(UserService)],
     if data.author_id == user.id:
         result = post.create_blog(data)
         return {
-            "Message": "Posted"
+            "Message": "Posted",
+            "result": result
         }
 
 @router.get("/vector_search")

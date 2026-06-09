@@ -33,7 +33,8 @@ class UserService:
         if data.author_id == user.id:
             result = post.create_blog(data)
             return {
-                "Message": "Posted"
+                "Message": "Posted",
+                "post": result
             }
         
     def posts(self, post, user):
@@ -44,14 +45,16 @@ class UserService:
         result = user_repo.updated_user_details(user.id, data)
 
         return {
-            "Message": "Updated"
+            "Message": "Updated",
+            "user": result
         }
 
     def update_password(self, user, user_repo : UserRepository,current_password: str,
                         new_password: str):
         result = user_repo.update_password(user.id, current_password, new_password)
         return {
-            "Message": "Updated"
+            "Message": "Updated",
+            "user":result
         }
     
     def get_all_users(self,user,user_repo,last_id, page_size):
@@ -71,10 +74,12 @@ class UserService:
                            ex = 3600)
         return None
     
-    def deleting_user(self, user_id):
+    async def deleting_user(self, user_id):
+        await self.redis.delete(f"user:{user_id}")
         return self.user_repo.deleting_account(user_id)
     
-    def soft_delete(self, user_id):
+    async def soft_delete(self, user_id):
+        await self.redis.delete(f"user:{user_id}")
         return self.user_repo.delete_user(user_id)
         
 
