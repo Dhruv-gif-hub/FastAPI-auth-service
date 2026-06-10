@@ -8,6 +8,7 @@ from fastapi import HTTPException, Depends
 from ..dependencies.db import get_db
 from uuid import UUID
 
+# This covers method that are directly access databases directly.
 class UserRepository:
 
     def __init__(
