@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie,
 from datetime import timedelta
 from typing_extensions import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
-from ..core.config import config
+from ..core.config import config_value
 from ..core.security import create_access_token, create_refresh_token, oauth2_scheme
 from ..models.auth_model import Token, TokenData
 from ..models.user import signupUser
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/auth")
 login_limiter = rate_limiter(max_requests=5, window_seconds=60)
 signup_limiter = rate_limiter(max_requests=3, window_seconds=60)
 
-hash_value = password_hash.hash(config.HASH_KEY)
+hash_value = password_hash.hash(config_value.HASH_KEY)
 
 async def authenticate_user(db, username: str, password: str):
 
@@ -58,12 +58,12 @@ async def login_access_token(
             detail="Incorrect username or password , or user is not active"
             )
     user_scopes = ROLE_SCOPE_MAP.get(user.role, [])
-    acces_token_expires = timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
+    acces_token_expires = timedelta(minutes=config_value.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username,
               "scope":" ".join(user_scopes)}, expires_delta=acces_token_expires
     )
-    refresh_token_expires = timedelta(days=config.REFRESH_EXPIRE_DAYS)
+    refresh_token_expires = timedelta(days=config_value.REFRESH_EXPIRE_DAYS)
     refresh_token = create_refresh_token(data={"sub": user.username}, expires_delta=refresh_token_expires)
     
     response.set_cookie(
@@ -92,7 +92,7 @@ def logout(response: Response, token: str = Depends(oauth2_scheme)):
     response.delete_cookie("refresh_token")
 
     try:
-        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+        payload = jwt.decode(token, config_value.SECRET_KEY, algorithms=[config_value.ALGORITHM])
         exp_timestamp = payload["exp"]
         current_timestamp = datetime.now(timezone.utc)
         remaining_time = int(exp_timestamp - current_timestamp)
@@ -115,7 +115,7 @@ async def refresh_token(refresh_token : Annotated[str|None,Cookie()],
         raise HTTPException(status_code=401, detail="No refresh token")
     
     try:
-        payload = jwt.decode(refresh_token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+        payload = jwt.decode(refresh_token, config_value.SECRET_KEY, algorithms=[config_value.ALGORITHM])
         username = payload.get("sub")
         if username is None:
             raise credentials_exception
@@ -128,7 +128,7 @@ async def refresh_token(refresh_token : Annotated[str|None,Cookie()],
     if user is None:
         raise credentials_exception
     user_scopes = ROLE_SCOPE_MAP.get(user.role, [])
-    acces_token_expires = timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
+    acces_token_expires = timedelta(minutes=config_value.ACCESS_TOKEN_EXPIRE_MINUTES)
     new_access_token = create_access_token(
             data={"sub": user.username,
                   "scope":" ".join(user_scopes)}, expires_delta=acces_token_expires

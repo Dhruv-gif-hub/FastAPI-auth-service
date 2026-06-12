@@ -3,7 +3,7 @@ from fastapi import Depends, HTTPException, status, Request, Security
 from typing_extensions import Annotated
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 import jwt
-from .config import config
+from .config import config_value
 from ..models.auth_model import TokenData
 from ..services.user_service import UserService
 from ..caching.redis import redis_client
@@ -29,7 +29,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
         expire = datetime.now(timezone.utc) + timedelta(minutes=30)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, config_value.SECRET_KEY, algorithm=config_value.ALGORITHM)
 
     return encoded_jwt
 
@@ -41,7 +41,7 @@ def create_refresh_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.now(timezone.utc) + timedelta(days=7)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, config_value.SECRET_KEY, algorithm=config_value.ALGORITHM)
     
     return encoded_jwt
 
@@ -66,7 +66,7 @@ def get_current_user(security_scopes: SecurityScopes,
         return None
 
     try:
-        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+        payload = jwt.decode(token, config_value.SECRET_KEY, algorithms=[config_value.ALGORITHM])
 
         username = payload.get("sub")
         if username is None:

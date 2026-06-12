@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
     async_sessionmaker,
 )
+from ..core.config import config_value
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped, relationship
@@ -11,9 +12,9 @@ from datetime import datetime
 from typing import List
 from sqlalchemy.sql import func   
 from sqlalchemy import Computed, Index, ForeignKey
-
+# "postgresql+asyncpg://postgres:Haldwani%401@172.29.80.1:5432/Blogs"
 engine = create_async_engine(
-    "postgresql+asyncpg://postgres:Haldwani%401@172.29.80.1:5432/Blogs",
+    config_value.Database_url,
     pool_size=20,
     max_overflow=10,
     pool_timeout=30,
