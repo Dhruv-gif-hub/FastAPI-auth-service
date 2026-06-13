@@ -3,6 +3,7 @@ from fastapi import Depends, HTTPException, status, Request, Security
 from typing_extensions import Annotated
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 import jwt
+from jwt.exceptions import ExpiredSignatureError
 from .config import config_value
 from ..models.auth_model import TokenData
 from ..services.user_service import UserService
@@ -76,7 +77,7 @@ def get_current_user(security_scopes: SecurityScopes,
 
         token_data = TokenData(username=username,scopes=token_scopes)
 
-    except jwt.InvalidTokenError:
+    except ExpiredSignatureError:
         raise credentials_exception
     user = user_access.get_user_username(username=token_data.username)
     if user is None:

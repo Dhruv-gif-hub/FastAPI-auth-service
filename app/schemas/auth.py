@@ -9,6 +9,7 @@ from ..models.user import signupUser
 from ..dependencies.rate_limiter import rate_limiter
 from ..services.exceptions import credentials_exception
 import jwt
+from jwt.exceptions import ExpiredSignatureError
 from ..core.roles import ROLE_SCOPE_MAP
 from ..core.utils import verify_password, password_hash
 from ..services.user_service import UserService
@@ -103,7 +104,7 @@ def logout(response: Response, token: str = Depends(oauth2_scheme)):
         else:
             return {"message": "Token already expired, no need to blocklist."}
     
-    except jwt.DecodeError:
+    except ExpiredSignatureError:
         return {"error": "Invalid token format."}
 
 @router.post("/refresh", response_model=Token)
@@ -121,7 +122,7 @@ async def refresh_token(refresh_token : Annotated[str|None,Cookie()],
             raise credentials_exception
         token_data = TokenData(username=username)
 
-    except jwt.InvalidTokenError:
+    except ExpiredSignatureError:
         raise credentials_exception
     
     user = await db.get_user_username(username=token_data.username)
