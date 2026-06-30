@@ -4,6 +4,7 @@ from ..dependencies.service_dependencies import get_comment_repo, get_redis
 import json
 
 # Comment Service
+# All Comment Logic is here
 class CommentService:
 
     def __init__(self, comment_repo: CommentRepository = Depends(get_comment_repo), 
