@@ -4,7 +4,8 @@ from ..dependencies.service_dependencies import get_comment_repo, get_redis
 import json
 
 # Comment Service
-# All Comment Logic is here
+# All Comment Logic is here 
+# The actual querying of the database is done in the repository layer
 class CommentService:
 
     def __init__(self, comment_repo: CommentRepository = Depends(get_comment_repo), 
