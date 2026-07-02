@@ -6,6 +6,7 @@ import json
 # Comment Service
 # All Comment Logic is here 
 # The actual querying of the database is done in the repository layer
+# This keeps the database logic separate from the business logic.
 class CommentService:
 
     def __init__(self, comment_repo: CommentRepository = Depends(get_comment_repo), 
