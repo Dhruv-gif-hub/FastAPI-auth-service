@@ -8,6 +8,7 @@ from typing import Annotated
 # This act as a layer between the user and the database.
 # From here the user's requests are mapped with the relevant database query function.
 # UserService is responsible for handling the business logic of user-related operations.
+# UserService interacts with the UserRepository to perform database operations.
 class UserService:
     
     def __init__(self, user_repo : Annotated[UserRepository, Depends(get_user_repo)], 
