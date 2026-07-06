@@ -9,6 +9,8 @@ from typing import Annotated
 from ..dependencies.Scope import require_read_user
 
 # This file contains the routes related to user profile access, post creation, and profile updates.
+# The routes defined here handle various user-related operations, such as retrieving user profiles, 
+# creating posts, updating profiles, changing passwords, and managing comments.
 router = APIRouter(prefix="/users")
 
 @router.get("/me")
