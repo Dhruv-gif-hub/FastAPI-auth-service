@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.18.4",
+    "asyncio>=4.0.0",
     "asyncpg>=0.31.0",
     "beanie>=2.1.0",
     "fastapi[all]>=0.135.3",

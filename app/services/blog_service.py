@@ -1,5 +1,6 @@
 from ..repositories.blog_repository import BlogContentRepository
 from fastapi import Depends 
+from asyncio import gather
 from ..dependencies.service_dependencies import get_blog_repo, get_redis
 from ..models.post import Blog_model, Blog_update
 import json
@@ -53,14 +54,18 @@ class BlogService:
         return (f'Blog with id {blog_id} updated successfully')
     
     async def delete_blog(self, blog_id: str):
-        await self.blog_repo.delete_blog(blog_id)
-        await self.redis.delete(f"blog:{blog_id}")
+        await gather(
+            self.blog_repo.delete_blog(blog_id),
+            self.redis.delete(f"blog:{blog_id}")
+        )
         return (f"Blog with id {blog_id} soft deleted successfully")
         
     async def get_all_blogs(self,last_id, page_size):
         return await self.blog_repo.get_all_blogs(last_id, page_size)
     
     async def hard_delete(self, blog_id:str):
-        await self.blog_repo.hard_delete(blog_id)
-        await self.redis.delete(f"blog:{blog_id}")
+        await gather(
+            self.blog_repo.hard_delete(blog_id),
+            self.redis.delete(f"blog:{blog_id}")
+        )
         return (f"Blog with id {blog_id} deleted successfully")

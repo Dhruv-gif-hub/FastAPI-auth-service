@@ -1,5 +1,6 @@
 from ..repositories.comment_repository import CommentRepository
 from fastapi import Depends 
+from asyncio import gather
 from ..dependencies.service_dependencies import get_comment_repo, get_redis
 import json
 
@@ -50,8 +51,10 @@ class CommentService:
             return None
         if comment.user_id != user.id and user.role == "user":
             return None
-        await self.comment_repo.delete_comment(comment_id)
-        await self.redis.delete(f"blog_comments_by_id:{comment_id}")
+        await gather(
+            self.comment_repo.delete_comment(comment_id),
+            self.redis.delete(f"blog_comments_by_id:{comment_id}")
+        )
         return (f'Comment with id {comment_id} deleted successfully')
     
     async def update_comment(self, comment_id, new_content, user_in_db):
@@ -61,8 +64,10 @@ class CommentService:
             return None
         if comment.user_id != user.id:
             return None
-        await self.comment_repo.update_comment(comment_id, new_content)
-        await self.redis.delete(f"blog_comments_by_id:{comment_id}")
+        await gather(
+            self.comment_repo.update_comment(comment_id, new_content),
+            self.redis.delete(f"blog_comments_by_id:{comment_id}")
+        )
         return (f'Comment with id {comment_id} updated successfully')
     
     async def hard_delete(self, comment_id):
