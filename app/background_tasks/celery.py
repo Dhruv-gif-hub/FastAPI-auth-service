@@ -1,6 +1,7 @@
 from celery import Celery, shared_task
 from ..core.config import Settings
 
+# Broker URL and Backend URL for Celery using Redis
 broker_url = (
     f"redis://{Settings.host}:"
     f"{Settings.port}/"
