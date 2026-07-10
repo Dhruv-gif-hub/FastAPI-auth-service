@@ -2,6 +2,10 @@ from celery import Celery, shared_task
 from ..core.config import Settings
 
 # Broker URL and Backend URL for Celery using Redis
+# The broker URL is used by Celery to send and receive messages, 
+# while the backend URL is used to store the results of tasks. 
+# Both URLs are constructed using the host, port, 
+# and database settings defined in the Settings class.
 broker_url = (
     f"redis://{Settings.host}:"
     f"{Settings.port}/"
