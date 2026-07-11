@@ -18,7 +18,7 @@ backend_url = (
     f"{Settings.REDIS_RESULT_DB}"
 )
 
-
+# Initialize Celery with the application name, broker URL, and backend URL.
 celery = Celery(
     "blog_app",
 
