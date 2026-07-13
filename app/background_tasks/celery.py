@@ -29,6 +29,8 @@ celery = Celery(
     backend=backend_url
 )
 
+# Update Celery configuration settings to specify task serialization format,
+# accepted content types, timezone, result expiration time, and connection retry behavior.
 celery.conf.update(
 
     task_serializer="json",
