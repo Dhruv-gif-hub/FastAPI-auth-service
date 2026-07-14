@@ -31,6 +31,10 @@ celery = Celery(
 
 # Update Celery configuration settings to specify task serialization format,
 # accepted content types, timezone, result expiration time, and connection retry behavior.
+# Celery is configured to use JSON for task serialization and result serialization,
+# accept only JSON content, operate in UTC timezone, enable UTC support,
+# set result expiration time to 3600 seconds (1 hour), retry broker connection on startup,
+# and track the start of tasks.
 celery.conf.update(
 
     task_serializer="json",
