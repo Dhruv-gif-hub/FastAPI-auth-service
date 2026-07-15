@@ -54,6 +54,10 @@ celery.conf.update(
     task_track_started=True,
 )
 
+# This is a shared Celery task that updates a blog post. It takes the post ID, user, blog,
+# and post data as arguments and calls the `update_blog` method 
+# of the post object to perform the update operation. 
+# The result of the update operation is returned.
 @shared_task
 def update_post(id, user, blog, post):
     return post.update_blog(id, user, blog)
