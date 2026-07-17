@@ -54,8 +54,8 @@ celery.conf.update(
     task_track_started=True,
 )
 
-# @shared_task is a decorator provided by Celery that allows you to define a task 
-# that can be executed asynchronously.
+# @shared_task is a decorator provided by Celery that allows you to define 
+# a task that can be executed asynchronously.
 @shared_task
 def update_post(id, user, blog, post):
     return post.update_blog(id, user, blog)
