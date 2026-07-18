@@ -37,7 +37,7 @@ celery = Celery(
 # and track the start of tasks.
 celery.conf.update(
 
-    task_serializer="json",
+    task_serializer="json", # this specifies that tasks will be serialized in JSON format
 
     result_serializer="json",
 
