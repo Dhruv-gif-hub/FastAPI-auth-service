@@ -39,7 +39,7 @@ celery.conf.update(
 
     task_serializer="json", # this specifies that tasks will be serialized in JSON format
 
-    result_serializer="json",
+    result_serializer="json", # this specifies that results will be serialized in JSON format
 
     accept_content=["json"],
 
