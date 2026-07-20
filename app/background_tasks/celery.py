@@ -41,7 +41,7 @@ celery.conf.update(
 
     result_serializer="json", # this specifies that results will be serialized in JSON format
 
-    accept_content=["json"],
+    accept_content=["json"], # this specifies that only JSON content will be accepted
 
     timezone="UTC",
 
