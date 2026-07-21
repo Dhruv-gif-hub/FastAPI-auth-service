@@ -43,7 +43,7 @@ celery.conf.update(
 
     accept_content=["json"], # this specifies that only JSON content will be accepted
 
-    timezone="UTC",
+    timezone="UTC", # this specifies that the timezone for Celery will be UTC
 
     enable_utc=True,
 
