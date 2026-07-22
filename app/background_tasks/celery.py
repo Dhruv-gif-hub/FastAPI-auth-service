@@ -45,7 +45,7 @@ celery.conf.update(
 
     timezone="UTC", # this specifies that the timezone for Celery will be UTC
 
-    enable_utc=True,
+    enable_utc=True, # this specifies that UTC support will be enabled
 
     result_expires=3600,
 
