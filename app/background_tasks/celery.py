@@ -47,7 +47,7 @@ celery.conf.update(
 
     enable_utc=True, # this specifies that UTC support will be enabled
 
-    result_expires=3600,
+    result_expires=3600, # this specifies that the results of tasks will expire after 3600 seconds (1 hour)
 
     broker_connection_retry_on_startup=True,
 
