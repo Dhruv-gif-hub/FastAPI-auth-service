@@ -49,7 +49,7 @@ celery.conf.update(
 
     result_expires=3600, # this specifies that the results of tasks will expire after 3600 seconds (1 hour)
 
-    broker_connection_retry_on_startup=True,
+    broker_connection_retry_on_startup=True, # this specifies that Celery will retry the broker connection on startup if it fails
 
     task_track_started=True,
 )
