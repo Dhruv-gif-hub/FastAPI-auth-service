@@ -12,6 +12,7 @@ broker_url = (
     f"{Settings.REDIS_BROKER_DB}"
 )
 
+# The backend URL is used to store the results of tasks in Redis.
 backend_url = (
     f"redis://{Settings.host}:"
     f"{Settings.port}/"
