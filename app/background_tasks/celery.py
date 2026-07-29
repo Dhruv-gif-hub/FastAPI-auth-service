@@ -12,7 +12,8 @@ broker_url = (
     f"{Settings.REDIS_BROKER_DB}"
 )
 
-# The backend URL is used to store the results of tasks in Redis.
+# The backend_url is constructed similarly to the broker_url, 
+# but it uses a different database index (REDIS_RESULT_DB) for storing task results.
 backend_url = (
     f"redis://{Settings.host}:"
     f"{Settings.port}/"
