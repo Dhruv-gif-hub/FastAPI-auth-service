@@ -24,7 +24,7 @@ backend_url = (
 # The Celery instance is configured with various settings, including task serialization format, 
 # timezone, result expiration time, and connection retry behavior.
 celery = Celery(
-    "blog_app",
+    "blog_app", # this specifies the name of the Celery application
 
     broker=broker_url,
 
