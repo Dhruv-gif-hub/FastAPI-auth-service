@@ -26,7 +26,7 @@ backend_url = (
 celery = Celery(
     "blog_app", # this specifies the name of the Celery application
 
-    broker=broker_url,
+    broker=broker_url, # this specifies the broker URL for Celery to send and receive messages 
 
     backend=backend_url
 )
