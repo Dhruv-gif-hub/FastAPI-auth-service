@@ -28,7 +28,7 @@ celery = Celery(
 
     broker=broker_url, # this specifies the broker URL for Celery to send and receive messages 
 
-    backend=backend_url
+    backend=backend_url # this specifies the backend URL for Celery to store the results of tasks
 )
 
 # Update Celery configuration settings to specify task serialization format,
