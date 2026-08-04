@@ -7,7 +7,7 @@ from ..core.config import Settings
 # Both URLs are constructed using the host, port, 
 # and database settings defined in the Settings class.
 broker_url = (
-    f"redis://{Settings.host}:"
+    f"redis://{Settings.host}:" # this specifies the protocol (redis) and the host for the Redis server
     f"{Settings.port}/"
     f"{Settings.REDIS_BROKER_DB}"
 )
