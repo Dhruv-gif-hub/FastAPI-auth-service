@@ -8,7 +8,7 @@ from ..core.config import Settings
 # and database settings defined in the Settings class.
 broker_url = (
     f"redis://{Settings.host}:" # this specifies the protocol (redis) and the host for the Redis server
-    f"{Settings.port}/"
+    f"{Settings.port}/" # this specifies the port for the Redis server
     f"{Settings.REDIS_BROKER_DB}"
 )
 
